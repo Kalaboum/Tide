@@ -45,6 +45,9 @@
 
 #include <QTransform>
 
+//TODO demander à raphaël l'usage des namespaces, _nom_methode conventions pour méthodes privées ?, fonctions qui suivent sans l'appel à LayoutEngine ?
+// named namespace in base class ?
+
 namespace
 {
 const qreal INSIDE_MARGIN_RELATIVE = 0.02;

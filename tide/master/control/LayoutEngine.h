@@ -40,6 +40,7 @@
 #ifndef LAYOUTENGINE_H
 #define LAYOUTENGINE_H
 
+#include LayoutPolicy.h
 #include "types.h"
 
 struct WindowCoordinates;
@@ -47,7 +48,7 @@ struct WindowCoordinates;
 /**
  * Layout engine for positionning windows on the wall.
  */
-class LayoutEngine
+class LayoutEngine : public LayoutPolicy
 {
 public:
     LayoutEngine( const DisplayGroup& group );
