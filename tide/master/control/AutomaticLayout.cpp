@@ -21,13 +21,13 @@ void AutomaticLayout::_dichotomicInsert(ContentWindowPtr window,ContentWindowPtr
     int b = windowVec.size -1;
     while(! a == b){
         if(_computeMaxRatio(windowVec[(a + b)/2]) > _computeMaxRatio(window)){
-            b = (a + b) / 2
+            b = (a + b) / 2;
         }
         else {
-            a = (a + b) /2
+            a = (a + b) /2;
         }
     }
-    windowVec.insert(windowVec.begin()+a, window)
+    windowVec.insert(windowVec.begin()+a, window);
 }
 
 
@@ -56,6 +56,7 @@ QRectF LayoutEngine::_getFocusedCoord(const ContentWindow& window, const Content
 {
     ContentWindowPtrs windowVec = _sortByMaxRatio(windows);
 
+
 }
 
 ContentWindowPtrs LayoutEngine::_sortByMaxRatio(const ContentWindowSet& windows) const
@@ -63,7 +64,7 @@ ContentWindowPtrs LayoutEngine::_sortByMaxRatio(const ContentWindowSet& windows)
     std::vector< ContentWindowPtr > windowVec(windows.size());
     for(auto& window : windows)
     {
-        _dichotomicInsert(window, windowVec)
+        _dichotomicInsert(window, windowVec);
     }
     return windowVec;
 }
