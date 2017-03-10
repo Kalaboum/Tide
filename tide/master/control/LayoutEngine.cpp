@@ -46,15 +46,8 @@
 #include <QTransform>
 
 //TODO demander à raphaël l'usage des namespaces, _nom_methode conventions pour méthodes privées ?, fonctions qui suivent sans l'appel à LayoutEngine ?
-// named namespace in base class ?
 
-namespace
-{
-const qreal INSIDE_MARGIN_RELATIVE = 0.02;
-const qreal SIDEBAR_WITH_REL_TO_DISPLAYGROUP_HEIGHT = 0.3 * 0.3;
-const qreal WINDOW_CONTROLS_MARGIN_PX = 200.0;
-const qreal WINDOW_SPACING_PX = 80.0;
-}
+using namespace controlSpecifications;
 
 struct WindowCoordinates
 {
@@ -63,10 +56,10 @@ struct WindowCoordinates
 };
 using WindowList = std::vector<WindowCoordinates>;
 
-LayoutEngine::LayoutEngine(const DisplayGroup& group)
-    : _group(group)
-{
-}
+
+LayoutEngine::LayoutEngine( const DisplayGroup& group )
+    : LayoutPolicy(group)
+{}
 
 qreal _computeAggregatedWidth(const WindowList& windows)
 {

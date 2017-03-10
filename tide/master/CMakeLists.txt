@@ -15,6 +15,7 @@ set(TIDEMASTER_LINK_LIBRARIES
 list(APPEND TIDEMASTER_PUBLIC_HEADERS
   ContentLoader.h
   control/AutomaticLayout.h
+  control/CanvasTree.h
   control/ContentController.h
   control/ContentWindowController.h
   control/DisplayGroupController.h
@@ -60,6 +61,7 @@ list(APPEND TIDEMASTER_PUBLIC_HEADERS
 list(APPEND TIDEMASTER_SOURCES
   ContentLoader.cpp
   control/AutomaticLayout.cpp
+  control/CanvasTree.cpp
   control/ContentController.cpp
   control/ContentWindowController.cpp
   control/DisplayGroupController.cpp

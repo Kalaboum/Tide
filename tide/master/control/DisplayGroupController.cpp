@@ -43,6 +43,7 @@
 #include "LayoutEngine.h"
 #include "scene/ContentWindow.h"
 #include "scene/DisplayGroup.h"
+#include "AutomaticLayout.h"
 
 #include <QTransform>
 
@@ -117,8 +118,9 @@ bool DisplayGroupController::focus(const QUuid& id)
 
     // Update focused windows coordinates BEFORE adding it for proper transition
     auto focusedWindows = _group.getFocusedWindows();
-    focusedWindows.insert(window);
-    LayoutEngine{_group}.updateFocusedCoord(focusedWindows);
+
+    focusedWindows.insert( window );
+    AutomaticLayout{ _group }.updateFocusedCoord( focusedWindows );
 
     _group.addFocusedWindow(window);
     return true;
@@ -149,9 +151,9 @@ void DisplayGroupController::focusSelected()
             focusedWindows.insert(window);
 
     // Update focused coordinates BEFORE adding windows for proper transition
-    LayoutEngine{_group}.updateFocusedCoord(focusedWindows);
-    for (const auto& window : focusedWindows)
-        _group.addFocusedWindow(window);
+    AutomaticLayout{ _group }.updateFocusedCoord( focusedWindows );
+    for( const auto& window : focusedWindows )
+        _group.addFocusedWindow( window );
 }
 
 void DisplayGroupController::unfocusAll()
@@ -249,7 +251,7 @@ QRectF DisplayGroupController::estimateSurface() const
 
 void DisplayGroupController::updateFocusedWindowsCoordinates()
 {
-    LayoutEngine{_group}.updateFocusedCoord(_group.getFocusedWindows());
+    AutomaticLayout{ _group }.updateFocusedCoord( _group.getFocusedWindows( ));
 }
 
 void DisplayGroupController::_extend(const QSizeF& newSize)
