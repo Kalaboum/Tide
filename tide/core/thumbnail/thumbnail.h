@@ -40,6 +40,7 @@
 #ifndef THUMBNAIL_H
 #define THUMBNAIL_H
 
+
 #include <QImage>
 
 class Content;
