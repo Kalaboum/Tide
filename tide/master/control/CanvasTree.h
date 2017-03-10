@@ -2,23 +2,21 @@
 #define CANVASTREE_H
 #include "types.h"
 
-struct WindowControlSpecification;
 
 class CanvasTree
 {
 public:
-    CanvasTree(ContentWindowPtrs);
-    void insert(ContentWindowPtr);
+    CanvasTree(ContentWindowPtrs windowVec, qreal optimal_width, qreal optimal_height);
+    void insert(ContentWindowPtr window);
     QRectF getPosition(int position);
+    void updateFocusCoordinates();
 
 private:
     class CanvasNode;
-    class CanvasLeaf;
-    class CanvasRoot;
-    class CanvasComponent;
-    CanvasNode rootNode;
-    static const WindowControlSpecification WINDOW_CTRL_SPECS;
+    typedef boost::shared_ptr<CanvasTree::CanvasNode> NodePtr;
+    NodePtr rootNode;
     static QRectF _addMargins(ContentWindowPtr window);
+
 };
 
 #endif // CANVASTREE_H

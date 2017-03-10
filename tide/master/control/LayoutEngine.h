@@ -40,7 +40,7 @@
 #ifndef LAYOUTENGINE_H
 #define LAYOUTENGINE_H
 
-#include LayoutPolicy.h
+#include "LayoutPolicy.h"
 #include "types.h"
 
 struct WindowCoordinates;
@@ -60,8 +60,6 @@ public:
     void updateFocusedCoord( const ContentWindowSet& windows ) const;
 
 private:
-    const DisplayGroup& _group;
-
     QRectF _getFocusedCoord( const ContentWindow& window,
                              const ContentWindowSet& focusedWindows ) const;
     WindowCoordinates _getNominalCoord( const ContentWindow& window ) const;
