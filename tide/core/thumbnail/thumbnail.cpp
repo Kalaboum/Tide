@@ -41,6 +41,9 @@
 
 #include "ThumbnailGeneratorFactory.h"
 #include "config.h"
+#include "ThumbnailGenerator.h"
+#include "scene/Content.h"
+
 
 #if TIDE_USE_QT5WEBKITWIDGETS || TIDE_USE_QT5WEBENGINE
 #include "WebbrowserThumbnailGenerator.h"
