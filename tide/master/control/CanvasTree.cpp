@@ -32,10 +32,15 @@ private:
 
 CanvasTree::CanvasTree(ContentWindowPtrs windowVec, qreal optimal_width, qreal optimal_height)
 {
+    std::cerr << "creation of rootNode \n";
     rootNode = boost::make_shared<CanvasNode>(CanvasNode(optimal_width, optimal_height));
+    std::cerr << rootNode << std::endl;
     rootNode->rootPtr = rootNode;
-    for(auto& window : windowVec){
-            rootNode->insert(window);
+    std::cerr << windowVec.size();
+    for(size_t i = 0 ; i < windowVec.size(); i++) {
+        std::cerr << windowVec[i];
+        std::cerr << "adding" << i << "node \n";
+        rootNode->insert(windowVec[i]);
     }
 }
 
@@ -47,6 +52,7 @@ QRectF CanvasTree::_addMargins(ContentWindowPtr window){
 }
 
 void CanvasTree::updateFocusCoordinates(){
+    std::cerr << "entering updatefocus coordinates" << std::endl;
     rootNode->updateFocusCoordinates();
 }
 
@@ -70,10 +76,11 @@ CanvasTree::CanvasNode::CanvasNode(NodePtr _rootPtr, NodePtr _parent, ContentWin
 
 
 bool CanvasTree::CanvasNode::insert(ContentWindowPtr window){
-    if(isTerminal()) {
+    if(isRoot()){
+            _insertRoot(window);
+    }
+    else if(isTerminal()) {
         _insertTerminal(window);
-    }else if(isRoot()){
-        _insertRoot(window);
     }
     else{
         if(firstChild->insert(window)) return true;
@@ -96,15 +103,24 @@ bool CanvasTree::CanvasNode::isTerminal(){
 }
 
 void CanvasTree::CanvasNode::updateFocusCoordinates(){
+    std::cerr << "optimal width in rootNode is : " << OPTIMAL_WIDTH << std::endl;
     this->_constrainIntoRect(QRectF(0.0, 0.0, OPTIMAL_WIDTH, OPTIMAL_HEIGHT));
 }
 
 //TODO check min and max size constraints on content window
 void CanvasTree::CanvasNode::_constrainIntoRect(QRectF rect){
     if(isRoot() && secondChild == NULL){
+        std::cerr << "check" << std::endl;
+        if (firstChild == NULL){
+            std::cerr << "should not happen too much" << std::endl;
+            return;
+        }
+        std::cerr << "should happen at least once" << std::endl;
         firstChild->_constrainIntoRect(rect);
+        return;
     }
     else if(isTerminal()) {
+        std::cerr << "entering is Terminal " << std::endl;
         qreal scaleFactor = std::min(rect.width()/this->width(), rect.height()/this->height());
         qreal newWidth = this->width() * scaleFactor;
         qreal newHeight = this->height() * scaleFactor;
@@ -112,12 +128,15 @@ void CanvasTree::CanvasNode::_constrainIntoRect(QRectF rect){
         qreal newTop = rect.top() + (rect.height() - newHeight)/2;
         QRectF newRect = QRectF(newLeft, newTop, newWidth, newHeight);
         setRect(newLeft,newTop,newWidth,newHeight);
+        std::cerr << "new rect is : " << newRect << std::endl;
         content->setFocusedCoordinates(newRect);
     }
-    if(secondChild->isFree()){
+    else if(secondChild->isFree()){
+        std::cerr << "was free" << std::endl;
         firstChild->_constrainIntoRect(rect);
     }
     else{
+        std::cerr << "only the good die young" << std::endl;
         qreal scaleFactor = std::min(rect.width()/this->width(), rect.height()/this->height());
         qreal newWidth = this->width() * scaleFactor;
         qreal newHeight = this->height() * scaleFactor;
@@ -151,6 +170,7 @@ bool CanvasTree::CanvasNode::_insertRoot(ContentWindowPtr window){
         }
     }
     else{
+        std::cerr << "this should be it" << std::endl;
        firstChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, rootPtr, window, _addMargins(window)));
        this->_setRect(_addMargins(window));
     }

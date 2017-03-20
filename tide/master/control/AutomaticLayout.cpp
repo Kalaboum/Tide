@@ -13,7 +13,7 @@ qreal AutomaticLayout::_computeMaxRatio(ContentWindowPtr window) const {
 void AutomaticLayout::_dichotomicInsert(ContentWindowPtr window,ContentWindowPtrs& windowVec) const{
     int a = 0;
     int b = windowVec.size() -1;
-    while(a != b){
+    while(b > a){
         if(_computeMaxRatio(windowVec[(a + b)/2]) > _computeMaxRatio(window)){
             b = (a + b) / 2;
         }
@@ -38,6 +38,7 @@ QRectF AutomaticLayout::getFocusedCoord( const ContentWindow& window ) const
 //TODO ask if const necessary, would like to add fields that change
 void AutomaticLayout::updateFocusedCoord( const ContentWindowSet& windows ) const
 {
+    std::cerr << "optimal width in automaticLayout is : " << OPTIMAL_WIDTH << std::endl;
     CanvasTree layoutTree = CanvasTree(_sortByMaxRatio(windows), OPTIMAL_WIDTH, OPTIMAL_HEIGHT);
     layoutTree.updateFocusCoordinates();
 }
@@ -54,7 +55,7 @@ QRectF AutomaticLayout::_getFocusedCoord(const ContentWindow& window, const Cont
 
 ContentWindowPtrs AutomaticLayout::_sortByMaxRatio(const ContentWindowSet& windows) const
 {
-    std::vector< ContentWindowPtr > windowVec(windows.size());
+    std::vector< ContentWindowPtr > windowVec;
     for(auto& window : windows)
     {
         _dichotomicInsert(window, windowVec);
