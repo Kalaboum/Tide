@@ -6,12 +6,13 @@
 class CanvasTree
 {
 public:
-    CanvasTree(ContentWindowPtrs windowVec, qreal optimal_width, qreal optimal_height);
+    CanvasTree(ContentWindowPtrs windowVec, QRectF available_space);
     void insert(ContentWindowPtr window);
     QRectF getPosition(int position);
     void updateFocusCoordinates();
 
 private:
+    QRectF AVAILABLE_SPACE;
     class CanvasNode;
     typedef boost::shared_ptr<CanvasTree::CanvasNode> NodePtr;
     NodePtr rootNode;

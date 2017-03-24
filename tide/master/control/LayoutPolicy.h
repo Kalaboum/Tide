@@ -4,7 +4,7 @@
 
 namespace controlSpecifications{
 const qreal INSIDE_MARGIN_RELATIVE = 0.02;
-const qreal SIDEBAR_WITH_REL_TO_DISPLAYGROUP_HEIGHT = 0.3 * 0.3;
+const qreal SIDEBAR_WIDTH_REL_TO_DISPLAYGROUP_HEIGHT = 0.3 * 0.3;
 const qreal WINDOW_CONTROLS_MARGIN_PX = 200.0;
 const qreal WINDOW_SPACING_PX = 80.0;
 }
@@ -22,6 +22,7 @@ public:
 
 protected:
     const DisplayGroup& _group;
+    QRectF _getAvailableSpace() const;
 
 };
 
