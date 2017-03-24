@@ -7,25 +7,36 @@
 
 
 qreal AutomaticLayout::_computeMaxRatio(ContentWindowPtr window) const {
-    return std::max(window->width()/OPTIMAL_WIDTH, window->height()/OPTIMAL_HEIGHT);
+    return std::max(window->width()/_getAvailableSpace().width(), window->height()/_getAvailableSpace().height());
 }
 
 void AutomaticLayout::_dichotomicInsert(ContentWindowPtr window,ContentWindowPtrs& windowVec) const{
-    int a = 0;
-    int b = windowVec.size() -1;
-    while(b > a){
-        if(_computeMaxRatio(windowVec[(a + b)/2]) > _computeMaxRatio(window)){
-            b = (a + b) / 2;
+    if(windowVec.size() == 0){
+        windowVec.push_back(window);
+    }
+    else {
+        size_t a = 0;
+        size_t b = windowVec.size();
+        while(b - a > 1){
+            if(_computeMaxRatio(windowVec[(a + b)/2]) > _computeMaxRatio(window)){
+                b = (a + b) / 2;
+            }
+            else {
+                a = (a + b) /2;
+            }
         }
-        else {
-            a = (a + b) /2;
+        if(_computeMaxRatio(windowVec[a]) < _computeMaxRatio(window)){
+            windowVec.insert(windowVec.begin()+a, window);
+        }else if(b < windowVec.size() && _computeMaxRatio(windowVec[b]) > _computeMaxRatio(window)){
+            windowVec.insert(windowVec.begin() + b + 1, window);
+        }else {
+            windowVec.insert(windowVec.begin() + b, window);
         }
     }
-    windowVec.insert(windowVec.begin()+a, window);
 }
 
 //Optimal height and width is initialized to be display group width and height, that can be changed if needed
-AutomaticLayout::AutomaticLayout(const DisplayGroup& group) : LayoutPolicy(group), OPTIMAL_WIDTH(group.width()), OPTIMAL_HEIGHT(group.height())
+AutomaticLayout::AutomaticLayout(const DisplayGroup& group) : LayoutPolicy(group)
 {
 }
 
@@ -37,9 +48,8 @@ QRectF AutomaticLayout::getFocusedCoord( const ContentWindow& window ) const
 
 //TODO ask if const necessary, would like to add fields that change
 void AutomaticLayout::updateFocusedCoord( const ContentWindowSet& windows ) const
-{
-    std::cerr << "optimal width in automaticLayout is : " << OPTIMAL_WIDTH << std::endl;
-    CanvasTree layoutTree = CanvasTree(_sortByMaxRatio(windows), OPTIMAL_WIDTH, OPTIMAL_HEIGHT);
+{;
+    CanvasTree layoutTree = CanvasTree(_sortByMaxRatio(windows), _getAvailableSpace());
     layoutTree.updateFocusCoordinates();
 }
 

@@ -18,8 +18,6 @@ public:
     void updateFocusedCoord( const ContentWindowSet& windows ) const;
 
 private:
-    const qreal OPTIMAL_WIDTH;
-    const qreal OPTIMAL_HEIGHT;
     qreal _computeMaxRatio(ContentWindowPtr) const;
     void _dichotomicInsert(ContentWindowPtr, ContentWindowPtrs&) const;
     QRectF _getFocusedCoord(const ContentWindow& window, const ContentWindowSet& windows) const;

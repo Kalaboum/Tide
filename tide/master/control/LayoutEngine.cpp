@@ -183,5 +183,5 @@ void LayoutEngine::_constrainFullyInside(QRectF& window) const
 qreal LayoutEngine::_getInsideMargin() const
 {
     return _group.width() * INSIDE_MARGIN_RELATIVE +
-           _group.height() * SIDEBAR_WITH_REL_TO_DISPLAYGROUP_HEIGHT;
+           _group.height() * SIDEBAR_WIDTH_REL_TO_DISPLAYGROUP_HEIGHT;
 }
