@@ -11,7 +11,7 @@ AutomaticLayout::AutomaticLayout(const DisplayGroup& group) : LayoutPolicy(group
 {
 
 }
-AutomaticLayout::AutomaticLayout(const DisplayGroup& group, bool separateMovies) : _group(group), _separateMovies(separateMovies)
+AutomaticLayout::AutomaticLayout(const DisplayGroup& group, bool separateMovies) : LayoutPolicy(group), _separateMovies(separateMovies)
 {
 }
 
@@ -54,8 +54,8 @@ QRectF AutomaticLayout::getFocusedCoord( const ContentWindow& window ) const
 void AutomaticLayout::updateFocusedCoord( const ContentWindowSet& windows ) const
 {
     if(_separateMovies){
-        Vector<ContentWindowSet> separatedContent = _separateContent(windows);
-        if(separatedContent[1].size == 0){
+        std::vector<ContentWindowSet> separatedContent = _separateContent(windows);
+        if(separatedContent[1].size() == 0){
             CanvasTree layoutTree = CanvasTree(_sortByMaxRatio(windows), _getAvailableSpace());
             layoutTree.updateFocusCoordinates();
         }
@@ -68,9 +68,9 @@ void AutomaticLayout::updateFocusedCoord( const ContentWindowSet& windows ) cons
         QRectF availableSpaceForMovies = QRectF(availableSpace.left() + availableSpaceForOther.width(), availableSpace.top(),
                                                 availableSpace.width() - availableSpaceForOther.width(), availableSpace.height());
         CanvasTree layoutTreeMovies = CanvasTree(_sortByMaxRatio(separatedContent[1]), availableSpaceForMovies);
-        CanvasTree layoutTreeOther = CancasTree(_sortByMaxRatio(separatedContent[0]), availableSpaceForOther);
+        CanvasTree layoutTreeOther = CanvasTree(_sortByMaxRatio(separatedContent[0]), availableSpaceForOther);
         layoutTreeMovies.updateFocusCoordinates();
-        layoutTreeother.updateFocusCoordinates();
+        layoutTreeOther.updateFocusCoordinates();
     }
     else {
         CanvasTree layoutTree = CanvasTree(_sortByMaxRatio(windows), _getAvailableSpace());
@@ -78,21 +78,25 @@ void AutomaticLayout::updateFocusedCoord( const ContentWindowSet& windows ) cons
     }
 }
 
-Vector<ContentWindowSet> _separateContent(const ContentWindowSet& windows) const{
-    ContentWindowSet movies = std::set<ContentWindowPtr>;
-    ContentWindowSet other = std::set<ContentWindowPtr>;
-    for (ContentWindowPtr& window : windows){
+std::vector<ContentWindowSet> AutomaticLayout::_separateContent(const ContentWindowSet& windows) const{
+    ContentWindowSet movies;
+    ContentWindowSet other;
+    for (const ContentWindowPtr& window : windows){
         if(window->getContentPtr()->getType() == CONTENT_TYPE_MOVIE){
             movies.insert(window);
         }else {
             other.insert(window);
         }
     }
+    std::vector<ContentWindowSet> myVect;
+    myVect.push_back(other);
+    myVect.push_back(movies);
+    return myVect;
 }
 
-qreal _getTotalArea(const ContentWindowSet& windows) const{
+qreal AutomaticLayout::_getTotalArea(const ContentWindowSet& windows) const{
     qreal areaCount = 0.0;
-    for (ContentWindowPtr& window : windows){
+    for (const ContentWindowPtr& window : windows){
         areaCount += window->width() * window->height();
     }
     return areaCount;
