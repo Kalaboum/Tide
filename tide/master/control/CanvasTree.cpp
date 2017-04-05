@@ -3,7 +3,7 @@
 #include "LayoutPolicy.h"
 #include "scene/ContentWindow.h"
 #include <boost/enable_shared_from_this.hpp>
-//TODO  margin for the title
+
 class CanvasTree::CanvasNode : public QRectF, public boost::enable_shared_from_this<CanvasNode>{
 public:
     CanvasNode(NodePtr rootPtr, NodePtr parent, NodePtr firstChild, NodePtr secondChild, QRectF rect);
