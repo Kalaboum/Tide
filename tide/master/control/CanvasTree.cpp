@@ -42,7 +42,7 @@ CanvasTree::CanvasTree(ContentWindowPtrs windowVec, QRectF available_space)
 QRectF CanvasTree::_addMargins(ContentWindowPtr window){
     return QRectF(window->x(), window->y(),
                   controlSpecifications::WINDOW_CONTROLS_MARGIN_PX + controlSpecifications::WINDOW_SPACING_PX + window->width(),
-                  window->height() + controlSpecifications::WINDOW_SPACING_PX);
+                  window->height() + controlSpecifications::WINDOW_SPACING_PX + controlSpecifications::WINDOW_TITLE_HEIGHT);
 }
 
 void CanvasTree::updateFocusCoordinates(){
@@ -102,9 +102,9 @@ void CanvasTree::CanvasNode::updateFocusCoordinates(){
 
 QRectF CanvasTree::CanvasNode::_rectWithoutMargins(QRectF rect){
     //take care that margins are respected
-    return QRectF(rect.left() + controlSpecifications::WINDOW_CONTROLS_MARGIN_PX, rect.top(),
+    return QRectF(rect.left() + controlSpecifications::WINDOW_CONTROLS_MARGIN_PX, rect.top() + controlSpecifications::WINDOW_TITLE_HEIGHT,
                              rect.width() - controlSpecifications::WINDOW_CONTROLS_MARGIN_PX - controlSpecifications::WINDOW_SPACING_PX,
-                             rect.height() - controlSpecifications::WINDOW_SPACING_PX);
+                             rect.height() - controlSpecifications::WINDOW_SPACING_PX - controlSpecifications::WINDOW_TITLE_HEIGHT);
 }
 
 //TODO check min and max size constraints on content window
