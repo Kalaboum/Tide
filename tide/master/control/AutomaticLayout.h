@@ -19,7 +19,7 @@ public:
     void updateFocusedCoord( const ContentWindowSet& windows ) const;
 
 private:
-    Vector<ContentWindowSet> _separateContent(const ContentWindowSet& windows) const;
+    std::vector<ContentWindowSet> _separateContent(const ContentWindowSet& windows) const;
     qreal _getTotalArea(const ContentWindowSet& windows) const;
     qreal _computeMaxRatio(ContentWindowPtr) const;
     void _dichotomicInsert(ContentWindowPtr, ContentWindowPtrs&) const;
