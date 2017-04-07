@@ -78,7 +78,7 @@ bool CanvasTree::CanvasNode::insert(ContentWindowPtr window){
         _insertRoot(window);
     }
     else if(isTerminal()) {
-        _insertTerminal(window);
+        return _insertTerminal(window);
     }
     else{
         if(firstChild->insert(window)) return true;
@@ -203,7 +203,7 @@ bool CanvasTree::CanvasNode::_insertTerminal(ContentWindowPtr window){
         else{
             internalNodeBoundaries = QRectF(this->left(), this->top(), realSize.width(), this->height());
             internalFreeLeafBoundaries = QRectF(this->left(), this->top() + realSize.height(),
-                                                this->width(), realSize.height() - realSize.height());
+                                                realSize.width(), this->height() - realSize.height());
             externalFreeleafBoundaries = QRectF(this->left() + realSize.height(), this->top(),
                                                this->width()- realSize.width(), this->height());
         }
@@ -228,13 +228,33 @@ void CanvasTree::CanvasNode::_insertSecondChild(ContentWindowPtr window){
 
     QRectF realSize = _addMargins(window);
     if(_chooseVerticalCut(realSize)){
-        secondChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, rootPtr, NULL, QRectF(this->width(), this->top(), realSize.width(), this->height())));
-        this->setWidth(this->width() + realSize.width());
+        if(realSize.height() > this->height()){
+            NodePtr newEmptySpace = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, NULL, NULL, QRectF(this->left(), this->height(),
+                                                                                                          this->width(), realSize.height() - this->height())));
+            firstChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr,rootPtr,firstChild, newEmptySpace, QRectF(this->left(), this->top(), this->width(), realSize.height())));
+            firstChild->firstChild->parent = parent;
+            secondChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, rootPtr, NULL, QRectF(this->width(), this->top(), realSize.width(), realSize.height())));
+            setRect(this->left(), this->top(), this->width() + realSize.height(), realSize.height());
+        }
+        else{
+            secondChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, rootPtr, NULL, QRectF(this->width(), this->top(), realSize.width(), this->height())));
+            this->setWidth(this->width() + realSize.width());
+        }
     }else {
-        secondChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, rootPtr, NULL, QRectF(this->left(), this->height(), this->width(), realSize.height())));
-        this->setHeight(this->height() + realSize.height());
+        if(realSize.width() > this->width()){
+            NodePtr newEmptySpace = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, NULL, NULL, QRectF(this->width(), this->top(),
+                                                                                                          realSize.width() - this->width(), this->height())));
+            firstChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr,rootPtr,firstChild, newEmptySpace, QRectF(this->left(), this->top(), realSize.width(), this->height())));
+            firstChild->firstChild->parent = parent;
+            secondChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, rootPtr, NULL, QRectF(this->left(), this->height(), realSize.width(), realSize.height())));
+            setRect(this->left(), this->top(), realSize.width(), this->height() + realSize.height());
+        }else{
+            secondChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, rootPtr, NULL, QRectF(this->left(), this->height(), this->width(), realSize.height())));
+            this->setHeight(this->height() + realSize.height());
+        }
     }
-    secondChild->insert(window);
+    bool isItWorking = secondChild->insert(window);
+    std::cerr << isItWorking << std::endl;
 }
 bool CanvasTree::CanvasNode::_chooseVerticalCut(QRectF realSize){
     return (this->width() + realSize.width()) / AVAILABLE_SPACE.width() < (this->height() + realSize.height()) / AVAILABLE_SPACE.height();
