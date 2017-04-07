@@ -25,7 +25,7 @@ private:
     void _dichotomicInsert(ContentWindowPtr, ContentWindowPtrs&) const;
     QRectF _getFocusedCoord(const ContentWindow& window, const ContentWindowSet& windows) const;
     ContentWindowPtrs _sortByMaxRatio(const ContentWindowSet& windows) const;
-    bool _separateMovies = true;
+    bool _separateMovies = false;
 };
 
 #endif // AUTOMATICLAYOUT_H
