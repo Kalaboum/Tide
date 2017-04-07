@@ -59,10 +59,11 @@ void AutomaticLayout::updateFocusedCoord( const ContentWindowSet& windows ) cons
             CanvasTree layoutTree = CanvasTree(_sortByMaxRatio(windows), _getAvailableSpace());
             layoutTree.updateFocusCoordinates();
         }
+        else {
         QRectF availableSpace = _getAvailableSpace();
         qreal areaOfMovies = _getTotalArea(separatedContent[1]);
         qreal areaOfOther = _getTotalArea(separatedContent[0]);
-        qreal widthForOtherContent = availableSpace.width() * (areaOfMovies + areaOfOther) / areaOfOther;
+        qreal widthForOtherContent = availableSpace.width() * (areaOfOther / (areaOfMovies + areaOfOther));
         QRectF availableSpaceForOther = QRectF(availableSpace.left(), availableSpace.top(), widthForOtherContent
                                                , availableSpace.height());
         QRectF availableSpaceForMovies = QRectF(availableSpace.left() + availableSpaceForOther.width(), availableSpace.top(),
@@ -71,6 +72,7 @@ void AutomaticLayout::updateFocusedCoord( const ContentWindowSet& windows ) cons
         CanvasTree layoutTreeOther = CanvasTree(_sortByMaxRatio(separatedContent[0]), availableSpaceForOther);
         layoutTreeMovies.updateFocusCoordinates();
         layoutTreeOther.updateFocusCoordinates();
+        }
     }
     else {
         CanvasTree layoutTree = CanvasTree(_sortByMaxRatio(windows), _getAvailableSpace());
@@ -97,7 +99,8 @@ std::vector<ContentWindowSet> AutomaticLayout::_separateContent(const ContentWin
 qreal AutomaticLayout::_getTotalArea(const ContentWindowSet& windows) const{
     qreal areaCount = 0.0;
     for (const ContentWindowPtr& window : windows){
-        areaCount += window->width() * window->height();
+        QSize preferredDimensions = window->getContentPtr()->getPreferredDimensions();
+        areaCount +=  preferredDimensions.width() * preferredDimensions.height() ;
     }
     return areaCount;
 }
