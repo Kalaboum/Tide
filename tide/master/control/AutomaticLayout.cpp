@@ -60,18 +60,18 @@ void AutomaticLayout::updateFocusedCoord( const ContentWindowSet& windows ) cons
             layoutTree.updateFocusCoordinates();
         }
         else {
-        QRectF availableSpace = _getAvailableSpace();
-        qreal areaOfMovies = _getTotalArea(separatedContent[1]);
-        qreal areaOfOther = _getTotalArea(separatedContent[0]);
-        qreal widthForOtherContent = availableSpace.width() * (areaOfOther / (areaOfMovies + areaOfOther));
-        QRectF availableSpaceForOther = QRectF(availableSpace.left(), availableSpace.top(), widthForOtherContent
-                                               , availableSpace.height());
-        QRectF availableSpaceForMovies = QRectF(availableSpace.left() + availableSpaceForOther.width(), availableSpace.top(),
-                                                availableSpace.width() - availableSpaceForOther.width(), availableSpace.height());
-        CanvasTree layoutTreeMovies = CanvasTree(_sortByMaxRatio(separatedContent[1]), availableSpaceForMovies);
-        CanvasTree layoutTreeOther = CanvasTree(_sortByMaxRatio(separatedContent[0]), availableSpaceForOther);
-        layoutTreeMovies.updateFocusCoordinates();
-        layoutTreeOther.updateFocusCoordinates();
+            QRectF availableSpace = _getAvailableSpace();
+            qreal areaOfMovies = _getTotalArea(separatedContent[1]);
+            qreal areaOfOther = _getTotalArea(separatedContent[0]);
+            qreal widthForOtherContent = availableSpace.width() * (areaOfOther / (areaOfMovies + areaOfOther));
+            QRectF availableSpaceForOther = QRectF(availableSpace.left(), availableSpace.top(), widthForOtherContent
+                                                   , availableSpace.height());
+            QRectF availableSpaceForMovies = QRectF(availableSpace.left() + availableSpaceForOther.width(), availableSpace.top(),
+                                                    availableSpace.width() - availableSpaceForOther.width(), availableSpace.height());
+            CanvasTree layoutTreeMovies = CanvasTree(_sortByMaxRatio(separatedContent[1]), availableSpaceForMovies);
+            CanvasTree layoutTreeOther = CanvasTree(_sortByMaxRatio(separatedContent[0]), availableSpaceForOther);
+            layoutTreeMovies.updateFocusCoordinates();
+            layoutTreeOther.updateFocusCoordinates();
         }
     }
     else {
