@@ -223,15 +223,18 @@ bool CanvasTree::CanvasNode::_insertTerminal(ContentWindowPtr window){
 
 }
 
+//This method is called only by the rootNode : it creates some space
 void CanvasTree::CanvasNode::_insertSecondChild(ContentWindowPtr window){
+
     QRectF realSize = _addMargins(window);
     if(_chooseVerticalCut(realSize)){
-        secondChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, rootPtr, window, QRectF(this->width(), this->top(), realSize.width(), this->height())));
+        secondChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, rootPtr, NULL, QRectF(this->width(), this->top(), realSize.width(), this->height())));
         this->setWidth(this->width() + realSize.width());
     }else {
-        secondChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, rootPtr, window, QRectF(this->left(), this->height(), this->width(), realSize.height())));
+        secondChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, rootPtr, NULL, QRectF(this->left(), this->height(), this->width(), realSize.height())));
         this->setHeight(this->height() + realSize.height());
     }
+    secondChild->insert(window);
 }
 bool CanvasTree::CanvasNode::_chooseVerticalCut(QRectF realSize){
     return (this->width() + realSize.width()) / AVAILABLE_SPACE.width() < (this->height() + realSize.height()) / AVAILABLE_SPACE.height();
