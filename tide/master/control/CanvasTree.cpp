@@ -70,7 +70,7 @@ CanvasTree::CanvasNode::CanvasNode(NodePtr _rootPtr, NodePtr _parent, ContentWin
 
 bool CanvasTree::CanvasNode::insert(ContentWindowPtr window){
     if(isRoot()){
-            _insertRoot(window);
+        _insertRoot(window);
     }
     else if(isTerminal()) {
         _insertTerminal(window);
