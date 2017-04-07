@@ -3,6 +3,7 @@
 #include "LayoutPolicy.h"
 #include "scene/ContentWindow.h"
 #include <boost/enable_shared_from_this.hpp>
+#include "scene/ContentType.h"
 
 class CanvasTree::CanvasNode : public QRectF, public boost::enable_shared_from_this<CanvasNode>{
 public:
@@ -21,7 +22,7 @@ public:
     NodePtr secondChild = NULL;
 private:
     void _constrainIntoRect(QRectF rect);
-    QRectF _rectWithoutMargins(QRectF rect);
+    QRectF _rectWithoutMargins(QRectF rect, CONTENT_TYPE content_type);
     bool _insertRoot(ContentWindowPtr window);
     bool _insertTerminal(ContentWindowPtr window);
     void _insertSecondChild(ContentWindowPtr window);
@@ -39,10 +40,14 @@ CanvasTree::CanvasTree(ContentWindowPtrs windowVec, QRectF available_space)
     }
 }
 
-QRectF CanvasTree::_addMargins(ContentWindowPtr window){
-    return QRectF(window->x(), window->y(),
-                  controlSpecifications::WINDOW_CONTROLS_MARGIN_PX + controlSpecifications::WINDOW_SPACING_PX + window->width(),
-                  window->height() + controlSpecifications::WINDOW_SPACING_PX + controlSpecifications::WINDOW_TITLE_HEIGHT);
+QRectF CanvasTree::_addMargins(const ContentWindowPtr window){
+    QRectF rectWithMargins =  QRectF(window->x(), window->y(), window->width(), window->height());
+    rectWithMargins.setTop(rectWithMargins.top() - controlSpecifications::WINDOW_SPACING_PX - controlSpecifications::WINDOW_TITLE_HEIGHT);
+    rectWithMargins.setLeft(rectWithMargins.left() - controlSpecifications::WINDOW_CONTROLS_MARGIN_PX - controlSpecifications::WINDOW_SPACING_PX);
+    if(window->getContentPtr()->getType() == CONTENT_TYPE_MOVIE){
+        rectWithMargins.setTop(rectWithMargins.top() - controlSpecifications::MOVIE_BAR_HEIGHT);
+    }
+    return rectWithMargins;
 }
 
 void CanvasTree::updateFocusCoordinates(){
@@ -100,11 +105,15 @@ void CanvasTree::CanvasNode::updateFocusCoordinates(){
     this->_constrainIntoRect(AVAILABLE_SPACE);
 }
 
-QRectF CanvasTree::CanvasNode::_rectWithoutMargins(QRectF rect){
+QRectF CanvasTree::CanvasNode::_rectWithoutMargins(QRectF rect, CONTENT_TYPE content_type){
     //take care that margins are respected
-    return QRectF(rect.left() + controlSpecifications::WINDOW_CONTROLS_MARGIN_PX, rect.top() + controlSpecifications::WINDOW_TITLE_HEIGHT,
+    QRectF rectWithoutMargins = QRectF(rect.left() + controlSpecifications::WINDOW_CONTROLS_MARGIN_PX, rect.top() + controlSpecifications::WINDOW_TITLE_HEIGHT,
                              rect.width() - controlSpecifications::WINDOW_CONTROLS_MARGIN_PX - controlSpecifications::WINDOW_SPACING_PX,
                              rect.height() - controlSpecifications::WINDOW_SPACING_PX - controlSpecifications::WINDOW_TITLE_HEIGHT);
+    if (content_type == CONTENT_TYPE_MOVIE){
+        rectWithoutMargins.setTop(rectWithoutMargins.top() + controlSpecifications::MOVIE_BAR_HEIGHT);
+    }
+    return rectWithoutMargins;
 }
 
 //TODO check min and max size constraints on content window
@@ -117,7 +126,8 @@ void CanvasTree::CanvasNode::_constrainIntoRect(QRectF rect){
         return;
     }
     else if(isTerminal()) {
-        QRectF rectWithoutMargins = _rectWithoutMargins(rect);
+        //TODO review this and make it cleaner
+        QRectF rectWithoutMargins = _rectWithoutMargins(rect, content->getContentPtr()->getType());
         qreal scaleFactor = std::min(rectWithoutMargins.width()/this->content->width(),
                                      rectWithoutMargins.height()/this->content->height());
         qreal newWidth = this->content->width() * scaleFactor;

@@ -8,6 +8,8 @@ const qreal SIDEBAR_WIDTH_REL_TO_DISPLAYGROUP_HEIGHT = 0.3 * 0.3;
 const qreal WINDOW_CONTROLS_MARGIN_PX = 200.0;
 const qreal WINDOW_SPACING_PX = 80.0;
 const qreal WINDOW_TITLE_HEIGHT = 100.0;
+//TODO check this, could not see it in style.js
+const qreal MOVIE_BAR_HEIGHT = 100.0;
 }
 class LayoutPolicy
 {
