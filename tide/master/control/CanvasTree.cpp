@@ -193,13 +193,13 @@ bool CanvasTree::CanvasNode::_insertTerminal(ContentWindowPtr window){
         QRectF internalNodeBoundaries;
         QRectF internalFreeLeafBoundaries;
         QRectF externalFreeleafBoundaries;
-        if(realSize.width()/ this->width() > realSize.height()/ this->height()){
+        if(realSize.width()/ this->width() > realSize.height()/ this->height()){ //horizontal cut
             internalNodeBoundaries = QRectF(this->left(), this->top(), this->width(), realSize.height());
             internalFreeLeafBoundaries = QRectF(this->left() + realSize.width(), this->top(),
                                                 this->width() - realSize.width(), realSize.height());
             externalFreeleafBoundaries = QRectF(this->left(), this->top() + realSize.height(),
                                                this->width(), this->height() - realSize.height());
-        }
+        } //vertical cut
         else{
             internalNodeBoundaries = QRectF(this->left(), this->top(), realSize.width(), this->height());
             internalFreeLeafBoundaries = QRectF(this->left(), this->top() + realSize.height(),
@@ -210,7 +210,7 @@ bool CanvasTree::CanvasNode::_insertTerminal(ContentWindowPtr window){
         NodePtr thisPtr = shared_from_this();
         NodePtr internalNodePtr = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, thisPtr, NULL, NULL,
                                                                internalNodeBoundaries));
-        NodePtr firstChildPtr = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, internalNodePtr, NULL, QRectF(this->left(), this->top(), realSize.width(), realSize.height())));
+        NodePtr firstChildPtr = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, internalNodePtr, window, QRectF(this->left(), this->top(), realSize.width(), realSize.height())));
         NodePtr secondChildPtr = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, internalNodePtr, NULL, internalFreeLeafBoundaries));
         internalNodePtr->firstChild =  firstChildPtr;
         internalNodePtr->secondChild = secondChildPtr;
