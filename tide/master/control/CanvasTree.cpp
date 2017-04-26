@@ -228,13 +228,14 @@ void CanvasTree::CanvasNode::_insertSecondChild(ContentWindowPtr window){
 
     QRectF realSize = _addMargins(window);
     if(_chooseVerticalCut(realSize)){
-        if(realSize.height() > this->height()){
+        if(realSize.height() > this->height()){//meaning we would have a to add some space
             NodePtr newEmptySpace = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, NULL, NULL, QRectF(this->left(), this->height(),
                                                                                                           this->width(), realSize.height() - this->height())));
-            firstChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr,rootPtr,firstChild, newEmptySpace, QRectF(this->left(), this->top(), this->width(), realSize.height())));
-            firstChild->firstChild->parent = parent;
+            NodePtr newFirstChildNode = boost::make_shared<CanvasNode>(CanvasNode(rootPtr,rootPtr,firstChild, newEmptySpace, QRectF(this->left(), this->top(), this->width(), realSize.height())));
+            firstChild = newFirstChildNode;
+            newFirstChildNode->firstChild->parent = newFirstChildNode;
             secondChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, rootPtr, NULL, QRectF(this->width(), this->top(), realSize.width(), realSize.height())));
-            setRect(this->left(), this->top(), this->width() + realSize.height(), realSize.height());
+            setRect(this->left(), this->top(), this->width() + realSize.width(), realSize.height());
         }
         else{
             secondChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, rootPtr, NULL, QRectF(this->width(), this->top(), realSize.width(), this->height())));
@@ -244,8 +245,9 @@ void CanvasTree::CanvasNode::_insertSecondChild(ContentWindowPtr window){
         if(realSize.width() > this->width()){
             NodePtr newEmptySpace = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, NULL, NULL, QRectF(this->width(), this->top(),
                                                                                                           realSize.width() - this->width(), this->height())));
-            firstChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr,rootPtr,firstChild, newEmptySpace, QRectF(this->left(), this->top(), realSize.width(), this->height())));
-            firstChild->firstChild->parent = parent;
+            NodePtr newFirstChildNode = boost::make_shared<CanvasNode>(CanvasNode(rootPtr,rootPtr,firstChild, newEmptySpace, QRectF(this->left(), this->top(), realSize.width(), this->height())));
+            firstChild = newFirstChildNode;
+            newFirstChildNode->firstChild->parent = newFirstChildNode;
             secondChild = boost::make_shared<CanvasNode>(CanvasNode(rootPtr, rootPtr, NULL, QRectF(this->left(), this->height(), realSize.width(), realSize.height())));
             setRect(this->left(), this->top(), realSize.width(), this->height() + realSize.height());
         }else{
