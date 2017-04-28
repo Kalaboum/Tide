@@ -19,6 +19,13 @@ qreal AutomaticLayout::_computeMaxRatio(ContentWindowPtr window) const {
     return std::max(window->width()/_getAvailableSpace().width(), window->height()/_getAvailableSpace().height());
 }
 
+/**
+ * Insert the window in the collection windowVec
+ *
+ * @brief AutomaticLayout::_dichotomicInsert
+ * @param window
+ * @param windowVec
+ */
 void AutomaticLayout::_dichotomicInsert(ContentWindowPtr window,ContentWindowPtrs& windowVec) const{
     if(windowVec.size() == 0){
         windowVec.push_back(window);
