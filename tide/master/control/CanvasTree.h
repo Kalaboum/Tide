@@ -2,7 +2,6 @@
 #define CANVASTREE_H
 #include "types.h"
 
-
 class CanvasTree
 {
 public:
@@ -14,10 +13,9 @@ public:
 private:
     QRectF AVAILABLE_SPACE;
     class CanvasNode;
-    typedef boost::shared_ptr<CanvasTree::CanvasNode> NodePtr;
+    using NodePtr = boost::shared_ptr<CanvasTree::CanvasNode>;
     NodePtr rootNode;
     static QRectF _addMargins(ContentWindowPtr window);
-
 };
 
 #endif // CANVASTREE_H

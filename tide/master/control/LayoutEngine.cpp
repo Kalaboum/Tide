@@ -45,7 +45,8 @@
 
 #include <QTransform>
 
-//TODO demander à raphaël l'usage des namespaces, _nom_methode conventions pour méthodes privées ?, fonctions qui suivent sans l'appel à LayoutEngine ?
+// TODO demander à raphaël l'usage des namespaces, _nom_methode conventions pour
+// méthodes privées ?, fonctions qui suivent sans l'appel à LayoutEngine ?
 
 using namespace controlSpecifications;
 
@@ -56,10 +57,10 @@ struct WindowCoordinates
 };
 using WindowList = std::vector<WindowCoordinates>;
 
-
-LayoutEngine::LayoutEngine( const DisplayGroup& group )
+LayoutEngine::LayoutEngine(const DisplayGroup& group)
     : LayoutPolicy(group)
-{}
+{
+}
 
 qreal _computeAggregatedWidth(const WindowList& windows)
 {
