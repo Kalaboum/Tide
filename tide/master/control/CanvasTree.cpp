@@ -21,15 +21,21 @@ public:
     void updateFocusCoordinates();
     const QRectF AVAILABLE_SPACE = QRectF(0.0, 0.0, 0.0, 0.0);
     NodePtr rootPtr;
-    NodePtr parent = NULL;
-    NodePtr firstChild = NULL;
-    NodePtr secondChild = NULL;
+    NodePtr parent;
+    NodePtr firstChild;
+    NodePtr secondChild;
 
 private:
-    void _constrainIntoRect(QRectF rect);
+    void _constrainIntoRect(const QRectF& rect);
+    void _constrainTerminalIntoRect(const QRectF& rect);
+    void _constrainNodeIntoRect(const QRectF& rect);
     QRectF _rectWithoutMargins(QRectF rect, CONTENT_TYPE content_type);
     bool _insertRoot(ContentWindowPtr window);
     bool _insertTerminal(ContentWindowPtr window);
+    void _computeBoundaries(const QRectF& realSize,
+                            QRectF& internalNodeBoundaries,
+                            QRectF& internalFreeLeafBoundaries,
+                            QRectF& externalFreeLeafBoundaries);
     void _insertSecondChild(ContentWindowPtr window);
     bool _chooseVerticalCut(QRectF realSize);
     void _setRect(QRectF newRect);
@@ -117,25 +123,25 @@ bool CanvasTree::CanvasNode::insert(ContentWindowPtr window)
 bool CanvasTree::CanvasNode::isFree()
 {
     if (isTerminal())
-        return content == NULL;
+        return content == nullptr;
     else
         return firstChild->isFree() && secondChild->isFree();
 }
 
 bool CanvasTree::CanvasNode::isRoot()
 {
-    return parent == NULL;
+    return parent == nullptr;
 }
 
 bool CanvasTree::CanvasNode::isTerminal()
 {
-    return firstChild == NULL && secondChild == NULL;
+    return (firstChild && secondChild);
 }
 
 void CanvasTree::CanvasNode::updateFocusCoordinates()
 {
     // available space is not entirety of the display group
-    this->_constrainIntoRect(AVAILABLE_SPACE);
+    _constrainIntoRect(AVAILABLE_SPACE);
 }
 
 QRectF CanvasTree::CanvasNode::_rectWithoutMargins(QRectF rect,
@@ -157,12 +163,59 @@ QRectF CanvasTree::CanvasNode::_rectWithoutMargins(QRectF rect,
     return rectWithoutMargins;
 }
 
-// TODO check min and max size constraints on content window
-void CanvasTree::CanvasNode::_constrainIntoRect(QRectF rect)
+void CanvasTree::CanvasNode::_constrainTerminalIntoRect(const QRectF& rect)
 {
-    if (isRoot() && secondChild == NULL)
+    QRectF rectWithoutMargins =
+        _rectWithoutMargins(rect, content->getContentPtr()->getType());
+    qreal scaleFactor =
+        std::min(rectWithoutMargins.width() / content->width(),
+                 rectWithoutMargins.height() / content->height());
+    qreal newWidth = content->width() * scaleFactor;
+    qreal newHeight = content->height() * scaleFactor;
+    qreal newLeft =
+        rectWithoutMargins.left() + (rectWithoutMargins.width() - newWidth) / 2;
+    qreal newTop = rectWithoutMargins.top() +
+                   (rectWithoutMargins.height() - newHeight) / 2;
+    QRectF newRect = QRectF(newLeft, newTop, newWidth, newHeight);
+    content->setFocusedCoordinates(newRect);
+    QRectF rectWithMargins = _addMargins(content);
+    setRect(rectWithMargins.left(), rectWithMargins.top(),
+            rectWithMargins.width(), rectWithMargins.height());
+}
+
+void CanvasTree::CanvasNode::_constrainNodeIntoRect(const QRectF& rect)
+{
+    qreal scaleFactor =
+        std::min(rect.width() / width(), rect.height() / height());
+    qreal newWidth = width() * scaleFactor;
+    qreal newHeight = height() * scaleFactor;
+    qreal newLeft = rect.left() + (rect.width() - newWidth) / 2;
+    qreal newTop = rect.top() + (rect.height() - newHeight) / 2;
+    qreal firstChildNewWidth = newWidth * firstChild->width() / width();
+    qreal firstChildNewHeight = newHeight * firstChild->height() / height();
+    firstChild->_constrainIntoRect(
+        QRectF(newLeft, newTop, firstChildNewWidth, firstChildNewHeight));
+    // TODO see if this causes issues
+    if (secondChild->top() == top())
     {
-        if (firstChild == NULL)
+        secondChild->_constrainIntoRect(
+            QRectF(newLeft + firstChildNewWidth, newTop,
+                   newWidth - firstChildNewWidth, firstChildNewHeight));
+    }
+    else
+    {
+        secondChild->_constrainIntoRect(
+            QRectF(newLeft, newTop + firstChildNewHeight, firstChildNewWidth,
+                   newHeight - firstChildNewHeight));
+    }
+    setRect(newLeft, newTop, newWidth, newHeight);
+}
+
+void CanvasTree::CanvasNode::_constrainIntoRect(const QRectF& rect)
+{
+    if (isRoot() && secondChild)
+    {
+        if (firstChild)
         {
             return;
         }
@@ -171,23 +224,7 @@ void CanvasTree::CanvasNode::_constrainIntoRect(QRectF rect)
     }
     else if (isTerminal())
     {
-        // TODO review this and make it cleaner
-        QRectF rectWithoutMargins =
-            _rectWithoutMargins(rect, content->getContentPtr()->getType());
-        qreal scaleFactor =
-            std::min(rectWithoutMargins.width() / this->content->width(),
-                     rectWithoutMargins.height() / this->content->height());
-        qreal newWidth = this->content->width() * scaleFactor;
-        qreal newHeight = this->content->height() * scaleFactor;
-        qreal newLeft = rectWithoutMargins.left() +
-                        (rectWithoutMargins.width() - newWidth) / 2;
-        qreal newTop = rectWithoutMargins.top() +
-                       (rectWithoutMargins.height() - newHeight) / 2;
-        QRectF newRect = QRectF(newLeft, newTop, newWidth, newHeight);
-        content->setFocusedCoordinates(newRect);
-        QRectF rectWithMargins = _addMargins(content);
-        setRect(rectWithMargins.left(), rectWithMargins.top(),
-                rectWithMargins.width(), rectWithMargins.height());
+        _constrainTerminalIntoRect(rect);
     }
     else if (secondChild->isFree())
     {
@@ -195,32 +232,7 @@ void CanvasTree::CanvasNode::_constrainIntoRect(QRectF rect)
     }
     else
     {
-        qreal scaleFactor = std::min(rect.width() / this->width(),
-                                     rect.height() / this->height());
-        qreal newWidth = this->width() * scaleFactor;
-        qreal newHeight = this->height() * scaleFactor;
-        qreal newLeft = rect.left() + (rect.width() - newWidth) / 2;
-        qreal newTop = rect.top() + (rect.height() - newHeight) / 2;
-        qreal firstChildNewWidth =
-            newWidth * firstChild->width() / this->width();
-        qreal firstChildNewHeight =
-            newHeight * firstChild->height() / this->height();
-        firstChild->_constrainIntoRect(
-            QRectF(newLeft, newTop, firstChildNewWidth, firstChildNewHeight));
-        // TODO see if this causes issues
-        if (secondChild->top() == this->top())
-        {
-            secondChild->_constrainIntoRect(
-                QRectF(newLeft + firstChildNewWidth, newTop,
-                       newWidth - firstChildNewWidth, firstChildNewHeight));
-        }
-        else
-        {
-            secondChild->_constrainIntoRect(
-                QRectF(newLeft, newTop + firstChildNewHeight,
-                       firstChildNewWidth, newHeight - firstChildNewHeight));
-        }
-        setRect(newLeft, newTop, newWidth, newHeight);
+        _constrainNodeIntoRect(rect);
     }
 }
 bool CanvasTree::CanvasNode::_insertRoot(ContentWindowPtr window)
@@ -237,7 +249,7 @@ bool CanvasTree::CanvasNode::_insertRoot(ContentWindowPtr window)
             { // we have to create some new space
                 NodePtr newNodePtr = boost::make_shared<CanvasNode>(
                     CanvasNode(rootPtr, rootPtr, firstChild, secondChild,
-                               QRectF(this->topLeft(), this->size())));
+                               QRectF(topLeft(), size())));
                 firstChild = newNodePtr;
                 _insertSecondChild(window);
             }
@@ -251,9 +263,37 @@ bool CanvasTree::CanvasNode::_insertRoot(ContentWindowPtr window)
     {
         firstChild = boost::make_shared<CanvasNode>(
             CanvasNode(rootPtr, rootPtr, window, _addMargins(window)));
-        this->_setRect(_addMargins(window));
+        _setRect(_addMargins(window));
     }
     return true;
+}
+
+void CanvasTree::CanvasNode::_computeBoundaries(
+    const QRectF& realSize, QRectF& internalNodeBoundaries,
+    QRectF& internalFreeLeafBoundaries, QRectF& externalFreeLeafBoundaries)
+{
+    if (realSize.width() / width() > realSize.height() / height())
+    { // horizontal cut
+        internalNodeBoundaries.setRect(left(), top(), width(),
+                                       realSize.height());
+        internalFreeLeafBoundaries.setRect(left() + realSize.width(), top(),
+                                           width() - realSize.width(),
+                                           realSize.height());
+        externalFreeLeafBoundaries.setRect(left(), top() + realSize.height(),
+                                           width(),
+                                           height() - realSize.height());
+    } // vertical cut
+    else
+    {
+        internalNodeBoundaries.setRect(left(), top(), realSize.width(),
+                                       height());
+        internalFreeLeafBoundaries.setRect(left(), top() + realSize.height(),
+                                           realSize.width(),
+                                           height() - realSize.height());
+        externalFreeLeafBoundaries.setRect(left() + realSize.height(), top(),
+                                           width() - realSize.width(),
+                                           height());
+    }
 }
 
 bool CanvasTree::CanvasNode::_insertTerminal(ContentWindowPtr window)
@@ -263,42 +303,22 @@ bool CanvasTree::CanvasNode::_insertTerminal(ContentWindowPtr window)
         return false;
     }
     QRectF realSize = _addMargins(window);
-    if (realSize.width() <= this->width() &&
-        realSize.height() <= this->height())
+    if (realSize.width() <= width() && realSize.height() <= height())
     {
         // separate depending on ratio (vertical or horizontal cut
         QRectF internalNodeBoundaries;
         QRectF internalFreeLeafBoundaries;
         QRectF externalFreeleafBoundaries;
-        if (realSize.width() / this->width() >
-            realSize.height() / this->height())
-        { // horizontal cut
-            internalNodeBoundaries = QRectF(this->left(), this->top(),
-                                            this->width(), realSize.height());
-            internalFreeLeafBoundaries =
-                QRectF(this->left() + realSize.width(), this->top(),
-                       this->width() - realSize.width(), realSize.height());
-            externalFreeleafBoundaries =
-                QRectF(this->left(), this->top() + realSize.height(),
-                       this->width(), this->height() - realSize.height());
-        } // vertical cut
-        else
-        {
-            internalNodeBoundaries = QRectF(this->left(), this->top(),
-                                            realSize.width(), this->height());
-            internalFreeLeafBoundaries =
-                QRectF(this->left(), this->top() + realSize.height(),
-                       realSize.width(), this->height() - realSize.height());
-            externalFreeleafBoundaries =
-                QRectF(this->left() + realSize.height(), this->top(),
-                       this->width() - realSize.width(), this->height());
-        }
+        _computeBoundaries(realSize, internalNodeBoundaries,
+                           internalFreeLeafBoundaries,
+                           externalFreeleafBoundaries);
+
         NodePtr thisPtr = shared_from_this();
         NodePtr internalNodePtr = boost::make_shared<CanvasNode>(
             CanvasNode(rootPtr, thisPtr, NULL, NULL, internalNodeBoundaries));
         NodePtr firstChildPtr = boost::make_shared<CanvasNode>(
             CanvasNode(rootPtr, internalNodePtr, window,
-                       QRectF(this->left(), this->top(), realSize.width(),
+                       QRectF(left(), top(), realSize.width(),
                               realSize.height())));
         NodePtr secondChildPtr = boost::make_shared<CanvasNode>(
             CanvasNode(rootPtr, internalNodePtr, NULL,
@@ -320,70 +340,66 @@ void CanvasTree::CanvasNode::_insertSecondChild(ContentWindowPtr window)
     QRectF realSize = _addMargins(window);
     if (_chooseVerticalCut(realSize))
     {
-        if (realSize.height() > this->height())
+        if (realSize.height() > height())
         { // meaning we would have a to add some space
             NodePtr newEmptySpace = boost::make_shared<CanvasNode>(
                 CanvasNode(rootPtr, NULL, NULL,
-                           QRectF(this->left(), this->height(), this->width(),
-                                  realSize.height() - this->height())));
+                           QRectF(left(), height(), width(),
+                                  realSize.height() - height())));
             NodePtr newFirstChildNode = boost::make_shared<CanvasNode>(
                 CanvasNode(rootPtr, rootPtr, firstChild, newEmptySpace,
-                           QRectF(this->left(), this->top(), this->width(),
-                                  realSize.height())));
+                           QRectF(left(), top(), width(), realSize.height())));
             firstChild = newFirstChildNode;
             newFirstChildNode->firstChild->parent = newFirstChildNode;
             secondChild = boost::make_shared<CanvasNode>(
                 CanvasNode(rootPtr, rootPtr, NULL,
-                           QRectF(this->width(), this->top(), realSize.width(),
+                           QRectF(width(), top(), realSize.width(),
                                   realSize.height())));
-            setRect(this->left(), this->top(), this->width() + realSize.width(),
+            setRect(left(), top(), width() + realSize.width(),
                     realSize.height());
         }
         else
         {
             secondChild = boost::make_shared<CanvasNode>(
                 CanvasNode(rootPtr, rootPtr, NULL,
-                           QRectF(this->width(), this->top(), realSize.width(),
-                                  this->height())));
-            this->setWidth(this->width() + realSize.width());
+                           QRectF(width(), top(), realSize.width(), height())));
+            setWidth(width() + realSize.width());
         }
     }
     else
     {
-        if (realSize.width() > this->width())
+        if (realSize.width() > width())
         {
             NodePtr newEmptySpace = boost::make_shared<CanvasNode>(
                 CanvasNode(rootPtr, NULL, NULL,
-                           QRectF(this->width(), this->top(),
-                                  realSize.width() - this->width(),
-                                  this->height())));
+                           QRectF(width(), top(), realSize.width() - width(),
+                                  height())));
             NodePtr newFirstChildNode = boost::make_shared<CanvasNode>(
                 CanvasNode(rootPtr, rootPtr, firstChild, newEmptySpace,
-                           QRectF(this->left(), this->top(), realSize.width(),
-                                  this->height())));
+                           QRectF(left(), top(), realSize.width(), height())));
             firstChild = newFirstChildNode;
             newFirstChildNode->firstChild->parent = newFirstChildNode;
             secondChild = boost::make_shared<CanvasNode>(
                 CanvasNode(rootPtr, rootPtr, NULL,
-                           QRectF(this->left(), this->height(),
-                                  realSize.width(), realSize.height())));
-            setRect(this->left(), this->top(), realSize.width(),
-                    this->height() + realSize.height());
+                           QRectF(left(), height(), realSize.width(),
+                                  realSize.height())));
+            setRect(left(), top(), realSize.width(),
+                    height() + realSize.height());
         }
         else
         {
             secondChild = boost::make_shared<CanvasNode>(
                 CanvasNode(rootPtr, rootPtr, NULL,
-                           QRectF(this->left(), this->height(), this->width(),
+                           QRectF(left(), height(), width(),
                                   realSize.height())));
-            this->setHeight(this->height() + realSize.height());
+            setHeight(height() + realSize.height());
         }
     }
 }
 bool CanvasTree::CanvasNode::_chooseVerticalCut(QRectF realSize)
 {
-    return (this->width() + realSize.width()) / AVAILABLE_SPACE.width() <
-           (this->height() + realSize.height()) / AVAILABLE_SPACE.height();
+    return (width() + realSize.width()) / AVAILABLE_SPACE.width() <
+           (height() + realSize.height()) / AVAILABLE_SPACE.height();
 }
 
 void CanvasTree::CanvasNode::_setRect(QRectF newRect)

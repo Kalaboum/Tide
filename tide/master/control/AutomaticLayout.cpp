@@ -6,6 +6,7 @@
 #include "scene/DisplayGroup.h"
 #include "types.h"
 
+// TODO think about window size (preferred dimensions and all)
 AutomaticLayout::AutomaticLayout(const DisplayGroup& group)
     : LayoutPolicy(group)
 {
@@ -29,7 +30,7 @@ qreal AutomaticLayout::_computeMaxRatio(ContentWindowPtr window) const
  * @param window
  * @param windowVec
  */
-// use std sort et auto = pour copier
+// TODO delete this once it worked
 void AutomaticLayout::_dichotomicInsert(ContentWindowPtr window,
                                         ContentWindowPtrs& windowVec) const
 {
@@ -164,12 +165,14 @@ QRectF AutomaticLayout::_getFocusedCoord(const ContentWindow& window,
 ContentWindowPtrs AutomaticLayout::_sortByMaxRatio(
     const ContentWindowSet& windows) const
 {
-    std::vector<ContentWindowPtr> windowVec = windows;
-    // TODO regarde ce que sort veux
-    // std::sort(windowVec.begin(), windowVec.end(), [this]());
-    for (auto& window : windows)
+    std::vector<ContentWindowPtr> windowVec;
+    for (auto window : windows)
     {
-        _dichotomicInsert(window, windowVec);
+        windowVec.push_back(window);
     }
+    std::sort(windowVec.begin(), windowVec.end(),
+              [this](ContentWindowPtr a, ContentWindowPtr b) {
+                  return _computeMaxRatio(a) < _computeMaxRatio(b);
+              });
     return windowVec;
 }
