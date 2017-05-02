@@ -37,7 +37,7 @@ private:
                             QRectF& internalNodeBoundaries,
                             QRectF& internalFreeLeafBoundaries,
                             QRectF& externalFreeLeafBoundaries);
-    void _insertSecondChild(ContentWindowPtr window);
+    bool _insertSecondChild(ContentWindowPtr window);
     bool _chooseVerticalCut(QRectF realSize);
     void _setRect(QRectF newRect);
     ContentWindowPtr content = NULL;
@@ -73,7 +73,10 @@ QRectF CanvasTree::_addMargins(const ContentWindowPtr window)
 
 void CanvasTree::updateFocusCoordinates()
 {
-    rootNode->updateFocusCoordinates();
+    if (rootNode)
+    {
+        rootNode->updateFocusCoordinates();
+    }
 }
 
 CanvasTree::CanvasNode::CanvasNode(NodePtr _rootPtr, NodePtr _parent,
@@ -136,7 +139,7 @@ bool CanvasTree::CanvasNode::isRoot()
 
 bool CanvasTree::CanvasNode::isTerminal()
 {
-    return (firstChild && secondChild);
+    return (!firstChild && !secondChild);
 }
 
 void CanvasTree::CanvasNode::updateFocusCoordinates()
@@ -214,9 +217,9 @@ void CanvasTree::CanvasNode::_constrainNodeIntoRect(const QRectF& rect)
 
 void CanvasTree::CanvasNode::_constrainIntoRect(const QRectF& rect)
 {
-    if (isRoot() && secondChild)
+    if (isRoot() && !secondChild)
     {
-        if (firstChild)
+        if (!firstChild)
         {
             return;
         }
@@ -238,11 +241,11 @@ void CanvasTree::CanvasNode::_constrainIntoRect(const QRectF& rect)
 }
 bool CanvasTree::CanvasNode::_insertRoot(ContentWindowPtr window)
 {
-    if (firstChild != NULL)
+    if (firstChild)
     {
         if (firstChild->insert(window))
             return true;
-        else if (secondChild != NULL)
+        else if (secondChild)
         {
             if (secondChild->insert(window))
                 return true;
@@ -252,12 +255,12 @@ bool CanvasTree::CanvasNode::_insertRoot(ContentWindowPtr window)
                     CanvasNode(rootPtr, rootPtr, firstChild, secondChild,
                                QRectF(topLeft(), size())));
                 firstChild = newNodePtr;
-                _insertSecondChild(window);
+                return _insertSecondChild(window);
             }
         }
         else
         {
-            _insertSecondChild(window);
+            return _insertSecondChild(window);
         }
     }
     else
@@ -265,8 +268,9 @@ bool CanvasTree::CanvasNode::_insertRoot(ContentWindowPtr window)
         firstChild = boost::make_shared<CanvasNode>(
             CanvasNode(rootPtr, rootPtr, window, _addMargins(window)));
         _setRect(_addMargins(window));
+        return true;
     }
-    return true;
+    return false;
 }
 
 void CanvasTree::CanvasNode::_computeBoundaries(
@@ -336,7 +340,7 @@ bool CanvasTree::CanvasNode::_insertTerminal(ContentWindowPtr window)
 }
 
 // This method is called only by the rootNode : it creates some space
-void CanvasTree::CanvasNode::_insertSecondChild(ContentWindowPtr window)
+bool CanvasTree::CanvasNode::_insertSecondChild(ContentWindowPtr window)
 {
     QRectF realSize = _addMargins(window);
     if (_chooseVerticalCut(realSize))
@@ -396,6 +400,7 @@ void CanvasTree::CanvasNode::_insertSecondChild(ContentWindowPtr window)
             setHeight(height() + realSize.height());
         }
     }
+    return insert(window);
 }
 bool CanvasTree::CanvasNode::_chooseVerticalCut(QRectF realSize)
 {
