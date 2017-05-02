@@ -5,6 +5,7 @@
 #include "types.h"
 #include <boost/enable_shared_from_this.hpp>
 
+// TODO fix pointer issue
 class CanvasTree::CanvasNode : public QRectF,
                                public boost::enable_shared_from_this<CanvasNode>
 {
