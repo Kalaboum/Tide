@@ -172,7 +172,7 @@ ContentWindowPtrs AutomaticLayout::_sortByMaxRatio(
     }
     std::sort(windowVec.begin(), windowVec.end(),
               [this](ContentWindowPtr a, ContentWindowPtr b) {
-                  return _computeMaxRatio(a) < _computeMaxRatio(b);
+                  return _computeMaxRatio(a) > _computeMaxRatio(b);
               });
     return windowVec;
 }
