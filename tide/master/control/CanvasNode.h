@@ -44,6 +44,7 @@ private:
     void _constrainIntoRect(const QRectF& rect);
     ContentWindowPtr content = NULL;
     QRectF _addMargins(ContentWindowPtr window);
+    const qreal RESIZE_FACTOR_MAX_FOR_INSERT = 1.3;
 };
 
 #endif // CANVASNODE_H
