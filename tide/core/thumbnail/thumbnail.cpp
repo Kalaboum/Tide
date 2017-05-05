@@ -45,6 +45,8 @@
 #include "scene/Content.h"
 
 
+#include "StreamThumbnailGenerator.h"
+
 #if TIDE_USE_QT5WEBKITWIDGETS || TIDE_USE_QT5WEBENGINE
 #include "WebbrowserThumbnailGenerator.h"
 #include "scene/WebbrowserContent.h"
@@ -55,7 +57,7 @@ namespace thumbnail
 QImage create(const Content& content, const QSize& size)
 {
     if (content.getType() == CONTENT_TYPE_PIXEL_STREAM)
-        return {};
+        return StreamThumbnailGenerator{size}.generate(content.getTitle());
 
 #if TIDE_USE_QT5WEBKITWIDGETS || TIDE_USE_QT5WEBENGINE
     if (auto web = dynamic_cast<const WebbrowserContent*>(&content))
