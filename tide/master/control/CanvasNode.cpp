@@ -262,6 +262,26 @@ bool CanvasNode::_insertTerminal(ContentWindowPtr window)
         secondChild = externalFreeLeafPtr;
         return true;
     }
+    // adding tolerance, we can resize the window
+    else if (realSize.width() <= RESIZE_FACTOR_MAX_FOR_INSERT * width() &&
+             realSize.height() <= RESIZE_FACTOR_MAX_FOR_INSERT * height())
+    {
+        qreal maxRatio =
+            std::max(realSize.width() / width(), realSize.height() / height());
+        NodePtr thisPtr = shared_from_this();
+        qreal newWidthWindow = realSize.width() / maxRatio;
+        qreal newHeightWindow = realSize.height() / maxRatio;
+        QRectF firstChildBoundaries =
+            QRectF(left(), top(), newWidthWindow, newHeightWindow);
+        QRectF freeLeafBoundaries =
+            QRectF(left() + newWidthWindow, top() + newHeightWindow,
+                   width() - newWidthWindow, height() - newHeightWindow);
+        firstChild = boost::make_shared<CanvasNode>(
+            CanvasNode(rootPtr, thisPtr, window, firstChildBoundaries));
+        secondChild = boost::make_shared<CanvasNode>(
+            CanvasNode(rootPtr, thisPtr, NULL, NULL, freeLeafBoundaries));
+        return true;
+    }
     return false;
 }
 
