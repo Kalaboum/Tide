@@ -30,10 +30,13 @@ public:
     /** Update the focused coordinates for the set of windows. */
     virtual void updateFocusedCoord(const ContentWindowSet& windows) const = 0;
     virtual ~LayoutPolicy(){};
+    static QRectF _addMargins(const ContentWindowPtr window);
 
 protected:
     const DisplayGroup& _group;
     QRectF _getAvailableSpace() const;
+    qreal _computeMaxRatio(ContentWindowPtr) const;
+    ContentWindowPtrs _sortByMaxRatio(const ContentWindowSet& windows) const;
 };
 
 #endif

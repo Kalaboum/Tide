@@ -17,12 +17,6 @@ AutomaticLayout::AutomaticLayout(const DisplayGroup& group, bool separateMovies)
 {
 }
 
-qreal AutomaticLayout::_computeMaxRatio(ContentWindowPtr window) const
-{
-    return std::max(window->width() / _getAvailableSpace().width(),
-                    window->height() / _getAvailableSpace().height());
-}
-
 /**
  * Insert the window in the collection windowVec
  *
@@ -160,19 +154,4 @@ QRectF AutomaticLayout::_getFocusedCoord(const ContentWindow& window,
 {
     updateFocusedCoord(windows);
     return window.getCoordinates();
-}
-
-ContentWindowPtrs AutomaticLayout::_sortByMaxRatio(
-    const ContentWindowSet& windows) const
-{
-    std::vector<ContentWindowPtr> windowVec;
-    for (auto window : windows)
-    {
-        windowVec.push_back(window);
-    }
-    std::sort(windowVec.begin(), windowVec.end(),
-              [this](ContentWindowPtr a, ContentWindowPtr b) {
-                  return _computeMaxRatio(a) > _computeMaxRatio(b);
-              });
-    return windowVec;
 }

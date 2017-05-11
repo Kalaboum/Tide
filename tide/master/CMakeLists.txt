@@ -17,6 +17,12 @@ list(APPEND TIDEMASTER_PUBLIC_HEADERS
   control/AutomaticLayout.h
   control/CanvasNode.h
   control/CanvasTree.h
+  control/Cut.h
+  control/CutAlgo.h
+  control/CutPoint.h
+  control/CutGrid.h
+  control/CutRect.h
+
   control/ContentController.h
   control/ContentWindowController.h
   control/DisplayGroupController.h
@@ -64,6 +70,11 @@ list(APPEND TIDEMASTER_SOURCES
   control/AutomaticLayout.cpp
   control/CanvasNode.cpp
   control/CanvasTree.cpp
+  control/Cut.cpp
+  control/CutAlgo.cpp
+  control/CutGrid.cpp
+  control/CutPoint.cpp
+  control/CutRect.cpp
   control/ContentController.cpp
   control/ContentWindowController.cpp
   control/DisplayGroupController.cpp

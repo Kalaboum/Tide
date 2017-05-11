@@ -19,3 +19,42 @@ QRectF LayoutPolicy::_getAvailableSpace() const
                   _group.width() - left_width_margin - right_width_margin,
                   _group.height() - top_margin - bottom_margin);
 }
+
+qreal LayoutPolicy::_computeMaxRatio(ContentWindowPtr window) const
+{
+    return std::max(window->width() / _getAvailableSpace().width(),
+                    window->height() / _getAvailableSpace().height());
+}
+
+ContentWindowPtrs LayoutPolicy::_sortByMaxRatio(
+    const ContentWindowSet& windows) const
+{
+    std::vector<ContentWindowPtr> windowVec;
+    for (auto window : windows)
+    {
+        windowVec.push_back(window);
+    }
+    std::sort(windowVec.begin(), windowVec.end(),
+              [this](ContentWindowPtr a, ContentWindowPtr b) {
+                  return _computeMaxRatio(a) > _computeMaxRatio(b);
+              });
+    return windowVec;
+}
+
+QRectF LayoutPolicy::_addMargins(const ContentWindowPtr window)
+{
+    QRectF rectWithMargins =
+        QRectF(window->x(), window->y(), window->width(), window->height());
+    rectWithMargins.setTop(rectWithMargins.top() -
+                           controlSpecifications::WINDOW_SPACING_PX -
+                           controlSpecifications::WINDOW_TITLE_HEIGHT);
+    rectWithMargins.setLeft(rectWithMargins.left() -
+                            controlSpecifications::WINDOW_CONTROLS_MARGIN_PX -
+                            controlSpecifications::WINDOW_SPACING_PX);
+    if (window->getContentPtr()->getType() == CONTENT_TYPE_MOVIE)
+    {
+        rectWithMargins.setTop(rectWithMargins.top() -
+                               controlSpecifications::MOVIE_BAR_HEIGHT);
+    }
+    return rectWithMargins;
+}

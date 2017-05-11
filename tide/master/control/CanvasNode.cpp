@@ -107,7 +107,7 @@ void CanvasNode::_constrainTerminalIntoRect(const QRectF& rect)
                    (rectWithoutMargins.height() - newHeight) / 2;
     QRectF newRect = QRectF(newLeft, newTop, newWidth, newHeight);
     content->setFocusedCoordinates(newRect);
-    QRectF rectWithMargins = _addMargins(content);
+    QRectF rectWithMargins = LayoutPolicy::_addMargins(content);
     setRect(rectWithMargins.left(), rectWithMargins.top(),
             rectWithMargins.width(), rectWithMargins.height());
 }
@@ -191,8 +191,9 @@ bool CanvasNode::_insertRoot(ContentWindowPtr window)
     else
     {
         firstChild = boost::make_shared<CanvasNode>(
-            CanvasNode(rootPtr, rootPtr, window, _addMargins(window)));
-        _setRect(_addMargins(window));
+            CanvasNode(rootPtr, rootPtr, window,
+                       LayoutPolicy::_addMargins(window)));
+        _setRect(LayoutPolicy::_addMargins(window));
         return true;
     }
     return false;
@@ -233,7 +234,7 @@ bool CanvasNode::_insertTerminal(ContentWindowPtr window)
     {
         return false;
     }
-    QRectF realSize = _addMargins(window);
+    QRectF realSize = LayoutPolicy::_addMargins(window);
     if (realSize.width() <= width() && realSize.height() <= height())
     {
         // separate depending on ratio (vertical or horizontal cut
@@ -288,7 +289,7 @@ bool CanvasNode::_insertTerminal(ContentWindowPtr window)
 // This method is called only by the rootNode : it creates some space
 bool CanvasNode::_insertSecondChild(ContentWindowPtr window)
 {
-    QRectF realSize = _addMargins(window);
+    QRectF realSize = LayoutPolicy::_addMargins(window);
     if (_chooseVerticalCut(realSize))
     {
         if (realSize.height() > height())
@@ -357,22 +358,4 @@ bool CanvasNode::_chooseVerticalCut(const QRectF& realSize) const
 void CanvasNode::_setRect(QRectF newRect)
 {
     setRect(newRect.left(), newRect.top(), newRect.width(), newRect.height());
-}
-
-QRectF CanvasNode::_addMargins(const ContentWindowPtr window)
-{
-    QRectF rectWithMargins =
-        QRectF(window->x(), window->y(), window->width(), window->height());
-    rectWithMargins.setTop(rectWithMargins.top() -
-                           controlSpecifications::WINDOW_SPACING_PX -
-                           controlSpecifications::WINDOW_TITLE_HEIGHT);
-    rectWithMargins.setLeft(rectWithMargins.left() -
-                            controlSpecifications::WINDOW_CONTROLS_MARGIN_PX -
-                            controlSpecifications::WINDOW_SPACING_PX);
-    if (window->getContentPtr()->getType() == CONTENT_TYPE_MOVIE)
-    {
-        rectWithMargins.setTop(rectWithMargins.top() -
-                               controlSpecifications::MOVIE_BAR_HEIGHT);
-    }
-    return rectWithMargins;
 }
