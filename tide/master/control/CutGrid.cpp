@@ -1,8 +1,8 @@
 #include "CutGrid.h"
 #include "Cut.h"
 #include "LayoutPolicy.h"
+#include "scene/ContentWindow.h"
 
-using CutPointPtr = boost::shared_ptr<CutPoint>;
 CutGrid::CutGrid()
 {
     widthCuts.push_back(boost::make_shared<Cut>(Cut::widthCut(0.0)));
@@ -100,15 +100,15 @@ bool CutGrid::_removeInsertionPoint(CutPointPtr point)
 
 QRectF CutGrid::currentSize() const
 {
-    return QRectF(0.0, 0.0, widthCuts[widthCuts.size() - 1],
-                  heightCuts[heightCuts.size() - 1]);
+    return QRectF(0.0, 0.0, widthCuts[widthCuts.size() - 1]->getX(),
+                  heightCuts[heightCuts.size() - 1]->getY());
 }
 
 std::vector<CutPointPtr> CutGrid::getPossibleInsertionPointsForWindow(
-    ContentWindowPtr window)
+    ContentWindowPtr window) const
 {
     std::vector<CutPointPtr> possiblePoints;
-    for (CutPointPtr& point : insertionPoints)
+    for (CutPointPtr point : insertionPoints)
     {
         if (isPossibleInsertWindowAtPoint(point, window))
         {
@@ -116,4 +116,14 @@ std::vector<CutPointPtr> CutGrid::getPossibleInsertionPointsForWindow(
         }
     }
     return possiblePoints;
+}
+
+// TODO change this to balance it effectively
+void CutGrid::balance()
+{
+    for (CutRectPtr cutWindow : windowsAdded)
+    {
+        cutWindow->getWindow()->setFocusedCoordinates(
+            cutWindow->getCorrespondingRect());
+    }
 }

@@ -2,11 +2,11 @@
 #define CUTPOINT_H
 #include "Cut.h"
 #include "types.h"
+#include "typesCut.h"
 
 class CutPoint
 {
 public:
-    using CutPtr = boost::shared_ptr<Cut>;
     CutPoint(CutPtr widthCut, CutPtr heightCut);
 
     const CutPtr getWidthCut() const;
@@ -20,4 +20,5 @@ private:
     CutPtr hCut;
 };
 
+typedef boost::shared_ptr<CutPoint> CutPointPtr;
 #endif // CUTPOINT_H

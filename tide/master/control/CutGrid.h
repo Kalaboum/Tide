@@ -4,20 +4,22 @@
 #include "CutPoint.h"
 #include "CutRect.h"
 #include "types.h"
+#include "typesCut.h"
 #include <boost/enable_shared_from_this.hpp>
-
 class CutGrid
 {
 public:
-    using CutPtr = boost::shared_ptr<Cut>;
-    using CutRectPtr = boost::shared_ptr<CutRect>;
-    using CutPointPtr = boost::shared_ptr<CutPoint>;
     CutGrid();
-    std::vector<CutPoint> getInsertionPoints() const;
-    bool intersectWithPreviousWindows(const QRectF& rect) const;
+    std::vector<CutPointPtr> getPossibleInsertionPointsForWindow(
+        ContentWindowPtr window) const;
     bool insertWindowAtPoint(CutPointPtr point, ContentWindowPtr window);
+    bool isPossibleInsertWindowAtPoint(CutPointPtr point,
+                                       ContentWindowPtr window) const;
+    void balance();
+    QRectF currentSize() const;
 
 private:
+    bool _intersectWithPreviousWindows(const QRectF& rect) const;
     void _addCut(CutPtr);
     bool _removeInsertionPoint(CutPointPtr point);
 

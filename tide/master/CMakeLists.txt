@@ -22,7 +22,6 @@ list(APPEND TIDEMASTER_PUBLIC_HEADERS
   control/CutPoint.h
   control/CutGrid.h
   control/CutRect.h
-
   control/ContentController.h
   control/ContentWindowController.h
   control/DisplayGroupController.h

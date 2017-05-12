@@ -28,3 +28,15 @@ bool CutRect::intersectWith(const QRectF& rect) const
     bool tooLow = rect.top() >= _secondHeightCut->getY();
     return (!(tooLeft || tooRight) && (!(tooHigh || tooLow)));
 }
+
+QRectF CutRect::getCorrespondingRect() const
+{
+    return QRectF(_firstWidthCut->getX(), _firstHeightCut->getY(),
+                  _secondWidthCut->getX() - _firstWidthCut->getX(),
+                  _secondHeightCut->getY() - _firstHeightCut->getY());
+}
+
+ContentWindowPtr CutRect::getWindow()
+{
+    return _window;
+}

@@ -1,7 +1,6 @@
 #ifndef CUT_H
 #define CUT_H
 #include "types.h"
-
 class Cut
 {
 public:
@@ -15,5 +14,7 @@ private:
     const qreal X = -1.0;
     const qreal Y = -1.0;
 };
+
+typedef boost::shared_ptr<Cut> CutPtr;
 
 #endif // CUT_H

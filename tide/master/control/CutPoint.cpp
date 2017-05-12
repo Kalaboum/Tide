@@ -1,5 +1,4 @@
 #include "CutPoint.h"
-using CutPtr = boost::shared_ptr<Cut>;
 CutPoint::CutPoint(CutPtr widthCut, CutPtr heightCut)
 {
     assert(widthCut->getX() >= 0.0);

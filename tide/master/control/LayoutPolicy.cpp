@@ -1,6 +1,6 @@
 #include "LayoutPolicy.h"
 #include "scene/DisplayGroup.h"
-
+// TODO put back the const
 using namespace controlSpecifications;
 LayoutPolicy::LayoutPolicy(const DisplayGroup& group)
     : _group(group)

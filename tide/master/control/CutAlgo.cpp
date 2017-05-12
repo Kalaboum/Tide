@@ -1,17 +1,19 @@
 #include "CutAlgo.h"
+#include "limits.h"
 #include "scene/ContentWindow.h"
 #include "scene/DisplayGroup.h"
+
+using CutPointPtr = boost::shared_ptr<CutPoint>;
 
 CutAlgo::CutAlgo(const DisplayGroup &group)
     : LayoutPolicy(group)
 {
-    grid = CutGrid();
 }
 
 QRectF CutAlgo::getFocusedCoord(const ContentWindow &window) const
 {
     updateFocusedCoord(_group.getFocusedWindows());
-    window.getCoordinates();
+    return window.getCoordinates();
 }
 
 void CutAlgo::updateFocusedCoord(const ContentWindowSet &windows) const
@@ -22,44 +24,63 @@ void CutAlgo::updateFocusedCoord(const ContentWindowSet &windows) const
     }
     else
     {
+        CutGrid grid = CutGrid();
         std::vector<ContentWindowPtr> windowVec = _sortByMaxRatio(windows);
         grid.insertWindowAtPoint(grid.getPossibleInsertionPointsForWindow(
-                                     windowVec[0]),
+                                     windowVec[0])[0],
                                  windowVec[0]);
+        QRectF enclosingRectangle =
+            _defineFirstEnclosingRectangle(windowVec[0]);
         windowVec.erase(windowVec.begin());
-        QRectF enclosingRectangle = ; // TODO define enclosing rectangle
         while (windowVec.size() > 0)
         {
             std::vector<CutPointPtr> insertionPoints =
-                grid.getPossibleInsertionPointsForWindow(windows[0],
-                                                         enclosingRectangle);
+                grid.getPossibleInsertionPointsForWindow(windowVec[0]);
+            CutPointPtr bestPoint =
+                _findBestInsertionPoint(insertionPoints, enclosingRectangle,
+                                        windowVec[0]);
+            grid.insertWindowAtPoint(bestPoint, windowVec[0]);
+            enclosingRectangle =
+                _computeRectIfInsertion(bestPoint, enclosingRectangle,
+                                        windowVec[0]);
+            windowVec.erase(windowVec.begin());
         }
     }
 }
 
 // Not sure how to do this, take first that does not add space
+// TODO modify when use recursion in recursive way
 CutPointPtr CutAlgo::_findBestInsertionPoint(std::vector<CutPointPtr> &points,
                                              QRectF enclosingRectangle,
                                              ContentWindowPtr window) const
 {
     size_t currentIndex = 0;
-    // TODO define max int,int min = std::in
-    int minWidthEnclosingRectangle;
+    size_t minIndex = 0;
+    int minWidthEnclosingRectangle = INT_MAX;
     while (currentIndex < points.size())
     {
-        CutPointPtr currentPoint = point[currentIndex];
+        CutPointPtr currentPoint = points[currentIndex];
         if (_isInRectangle(currentPoint, enclosingRectangle, window))
         {
-            return windowVec[curentIndex];
+            return points[currentIndex];
         }
         else
         {
-            QRectF wouldBeRect = _computeRectIfInsertion()
+            QRectF wouldBeRect =
+                _computeRectIfInsertion(points[currentIndex],
+                                        enclosingRectangle, window);
+            if (wouldBeRect.width() < minWidthEnclosingRectangle)
+            {
+                minWidthEnclosingRectangle = wouldBeRect.width();
+                minIndex = currentIndex;
+            }
         }
     }
+    return points[minIndex];
 }
 
-bool CutAlgo::_isInRectangle(CutPointPtr point, QRectF enclosingRectangle,
+bool CutAlgo::_isInRectangle(CutPointPtr point,
+                             const QRectF &enclosingRectangle,
                              ContentWindowPtr window) const
 {
     return (point->getX() + LayoutPolicy::_addMargins(window).width() <
@@ -68,6 +89,45 @@ bool CutAlgo::_isInRectangle(CutPointPtr point, QRectF enclosingRectangle,
              enclosingRectangle.height()));
 }
 
-QRectF CutAlgo::_computeRectIfInsertion() const
+QRectF CutAlgo::_computeRectIfInsertion(CutPointPtr point,
+                                        const QRectF &enclosingRectangle,
+                                        ContentWindowPtr window) const
 {
+    QRectF rectByAddingWindow =
+        QRectF(0.0, 0.0, point->getX() + _addMargins(window).width(),
+               point->getY() + _addMargins(window).height());
+    QRectF newEnclosingRectangle =
+        _getEnclosingRectangleOfRatio(rectByAddingWindow, enclosingRectangle);
+    // check if the new enclosing rectangle is bigger or smaller than the
+    // previous one
+    if (std::max(newEnclosingRectangle.width() / rectByAddingWindow.width(),
+                 newEnclosingRectangle.height() /
+                     rectByAddingWindow.height()) >= 1.0)
+    {
+        return newEnclosingRectangle;
+    }
+    else
+    {
+        return enclosingRectangle;
+    }
+}
+
+QRectF CutAlgo::_defineFirstEnclosingRectangle(ContentWindowPtr window) const
+{
+    QRectF available_space = _getAvailableSpace();
+    QRectF rect =
+        _getEnclosingRectangleOfRatio(_addMargins(window), available_space);
+    rect.setLeft(0.0);
+    rect.setTop(0.0);
+    return rect;
+}
+
+QRectF CutAlgo::_getEnclosingRectangleOfRatio(const QRectF &rectToEnclose,
+                                              const QRectF &rectRatio) const
+{
+    qreal scaleFactor = std::max(rectToEnclose.width() / rectRatio.width(),
+                                 rectToEnclose.height() / rectRatio.height());
+    return QRectF(rectToEnclose.left(), rectToEnclose.top(),
+                  rectRatio.width() * scaleFactor,
+                  rectRatio.height() * scaleFactor);
 }

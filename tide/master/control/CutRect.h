@@ -2,6 +2,7 @@
 #define CUTRECT_H
 #include "Cut.h"
 #include "types.h"
+#include "typesCut.h"
 
 /**
  * A Rectangle is defined here by the intersection of 4 cuts ( 2 by 2 parallel)
@@ -10,13 +11,13 @@
 class CutRect
 {
 public:
-    using CutPtr = boost::shared_ptr<Cut>;
-
     static CutRect createCutRect(CutPtr firstWidthCut, CutPtr secondWidthCut,
                                  CutPtr firstHeightCut, CutPtr secondHeightCut,
                                  ContentWindowPtr window);
 
     bool intersectWith(const QRectF& rect) const;
+    QRectF getCorrespondingRect() const;
+    ContentWindowPtr getWindow();
 
 private:
     CutRect(CutPtr firstWidthCut, CutPtr secondWidthCut, CutPtr firstHeightCut,
@@ -27,5 +28,7 @@ private:
     CutPtr _secondHeightCut;
     ContentWindowPtr _window;
 };
+
+typedef boost::shared_ptr<CutRect> CutRectPtr;
 
 #endif // CUTRECT_H
