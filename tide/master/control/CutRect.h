@@ -2,7 +2,6 @@
 #define CUTRECT_H
 #include "Cut.h"
 #include "types.h"
-#include "typesCut.h"
 
 /**
  * A Rectangle is defined here by the intersection of 4 cuts ( 2 by 2 parallel)

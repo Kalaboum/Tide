@@ -4,7 +4,6 @@
 #include "CutPoint.h"
 #include "CutRect.h"
 #include "types.h"
-#include "typesCut.h"
 #include <boost/enable_shared_from_this.hpp>
 class CutGrid
 {

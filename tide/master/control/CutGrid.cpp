@@ -14,21 +14,20 @@ bool CutGrid::isPossibleInsertWindowAtPoint(CutPointPtr point,
                                             ContentWindowPtr window) const
 {
     QRectF rectWithMargins = LayoutPolicy::_addMargins(window);
-    rectWithMargins.setTopRight(QPoint(point->getX(), point->getY()));
+    rectWithMargins.moveTopLeft(QPoint(point->getX(), point->getY()));
     return !(_intersectWithPreviousWindows(rectWithMargins));
 }
 
 bool CutGrid::insertWindowAtPoint(CutPointPtr point, ContentWindowPtr window)
 {
     QRectF rectWithMargins = LayoutPolicy::_addMargins(window);
-    rectWithMargins.setTopRight(QPoint(point->getX(), point->getY()));
+    rectWithMargins.moveTopLeft(QPoint(point->getX(), point->getY()));
     if (_intersectWithPreviousWindows(rectWithMargins))
     {
         return false;
     }
     else
     {
-        // TODO deal with insertion Points madness
         assert(_removeInsertionPoint(point));
         CutPtr newWidthCut = boost::make_shared<Cut>(
             Cut::widthCut(rectWithMargins.left() + rectWithMargins.width()));
@@ -85,13 +84,11 @@ bool CutGrid::_intersectWithPreviousWindows(const QRectF& rect) const
 
 bool CutGrid::_removeInsertionPoint(CutPointPtr point)
 {
-    // TODO check if we can assert pointer equal (check also the libs for
-    // vector)
     for (size_t i = 0; i < insertionPoints.size(); i++)
     {
         if (insertionPoints[i] == point)
         {
-            // TODO pop list insertionPoints
+            insertionPoints.erase(insertionPoints.begin() + i);
             return true;
         }
     }

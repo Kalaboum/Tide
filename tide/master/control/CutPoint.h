@@ -2,7 +2,6 @@
 #define CUTPOINT_H
 #include "Cut.h"
 #include "types.h"
-#include "typesCut.h"
 
 class CutPoint
 {

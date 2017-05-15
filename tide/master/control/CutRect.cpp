@@ -22,10 +22,11 @@ CutRect::CutRect(CutPtr firstWidthCut, CutPtr secondWidthCut,
 
 bool CutRect::intersectWith(const QRectF& rect) const
 {
-    bool tooLeft = rect.left() + rect.width() <= _firstWidthCut->getX();
-    bool tooRight = rect.left() >= _secondWidthCut->getX();
-    bool tooHigh = rect.top() + rect.width() <= _firstHeightCut->getY();
-    bool tooLow = rect.top() >= _secondHeightCut->getY();
+    // Can have issue with floats, tolerance is added
+    bool tooLeft = rect.left() + rect.width() <= _firstWidthCut->getX() + 1;
+    bool tooRight = rect.left() >= _secondWidthCut->getX() - 1;
+    bool tooHigh = rect.top() + rect.width() <= _firstHeightCut->getY() + 1;
+    bool tooLow = rect.top() >= _secondHeightCut->getY() - 1;
     return (!(tooLeft || tooRight) && (!(tooHigh || tooLow)));
 }
 

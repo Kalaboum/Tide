@@ -18,6 +18,7 @@ QRectF CutAlgo::getFocusedCoord(const ContentWindow &window) const
 
 void CutAlgo::updateFocusedCoord(const ContentWindowSet &windows) const
 {
+    // TODO check session 4-equal with blue end with segmentation fault
     if (windows.size() == 0)
     {
         return;
@@ -45,6 +46,7 @@ void CutAlgo::updateFocusedCoord(const ContentWindowSet &windows) const
                                         windowVec[0]);
             windowVec.erase(windowVec.begin());
         }
+        grid.balance();
     }
 }
 
@@ -54,6 +56,7 @@ CutPointPtr CutAlgo::_findBestInsertionPoint(std::vector<CutPointPtr> &points,
                                              QRectF enclosingRectangle,
                                              ContentWindowPtr window) const
 {
+    assert(points.size() > 0);
     size_t currentIndex = 0;
     size_t minIndex = 0;
     int minWidthEnclosingRectangle = INT_MAX;
@@ -75,6 +78,7 @@ CutPointPtr CutAlgo::_findBestInsertionPoint(std::vector<CutPointPtr> &points,
                 minIndex = currentIndex;
             }
         }
+        currentIndex++;
     }
     return points[minIndex];
 }
@@ -117,8 +121,8 @@ QRectF CutAlgo::_defineFirstEnclosingRectangle(ContentWindowPtr window) const
     QRectF available_space = _getAvailableSpace();
     QRectF rect =
         _getEnclosingRectangleOfRatio(_addMargins(window), available_space);
-    rect.setLeft(0.0);
-    rect.setTop(0.0);
+    rect.moveLeft(0.0);
+    rect.moveTop(0.0);
     return rect;
 }
 
