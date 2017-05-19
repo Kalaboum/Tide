@@ -118,24 +118,27 @@ std::vector<CutPointPtr> CutGrid::getPossibleInsertionPointsForWindow(
 // TODO change this to balance it effectively
 void CutGrid::balance(const QRectF& availableSpace)
 {
-    _scaleCuts(availableSpace);
-    _setOrderOfCuts();
-    std::vector<std::vector<int>> matrixOfIds(
-        widthCuts.size() - 1, std::vector<int>(heightCuts.size() - 1, -1));
-    _fillMatrix(matrixOfIds);
-    for (size_t windowIndex = 0; windowIndex < windowsAdded.size();
-         windowIndex++)
-    {
-        std::vector<boost::shared_ptr<size_t>> indices =
-            _getIndicesInMatrix(windowsAdded[windowIndex]);
-        _giveNewBoundsToWindow(indices, windowIndex);
-        //_findBiggerCoordsForId(windowIndex, matrixOfIds, indices);
-        // TODO fix this, must find the space it occupies and add the cuts
-        /*for (CutPtr cut : _giveNewBoundsToWindow(indices, windowIndex))
-        {
-            _addCut(cut);
-        }*/
-    }
+    QRectF bleuh = QRectF(availableSpace.toRect());
+    std::cout << bleuh.width() << std::endl;
+    //    _scaleCuts(availableSpace);
+    //    _setOrderOfCuts();
+    //    std::vector<std::vector<int>> matrixOfIds(
+    //        widthCuts.size() - 1, std::vector<int>(heightCuts.size() - 1,
+    //        -1));
+    //    _fillMatrix(matrixOfIds);
+    //    for (size_t windowIndex = 0; windowIndex < windowsAdded.size();
+    //         windowIndex++)
+    //    {
+    //        std::vector<boost::shared_ptr<size_t>> indices =
+    //            _getIndicesInMatrix(windowsAdded[windowIndex]);
+    //        _giveNewBoundsToWindow(indices, windowIndex);
+    //        //_findBiggerCoordsForId(windowIndex, matrixOfIds, indices);
+    //        // TODO fix this, must find the space it occupies and add the cuts
+    //        /*for (CutPtr cut : _giveNewBoundsToWindow(indices, windowIndex))
+    //        {
+    //            _addCut(cut);
+    //        }*/
+    //    }
     _updateWindows();
 }
 
