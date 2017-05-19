@@ -60,6 +60,7 @@ CutPointPtr CutAlgo::_findBestInsertionPoint(std::vector<CutPointPtr> &points,
     size_t currentIndex = 0;
     size_t minIndex = 0;
     int minWidthEnclosingRectangle = INT_MAX;
+    qreal minPointL1Norm = 1500000;
     while (currentIndex < points.size())
     {
         CutPointPtr currentPoint = points[currentIndex];
@@ -76,6 +77,18 @@ CutPointPtr CutAlgo::_findBestInsertionPoint(std::vector<CutPointPtr> &points,
             {
                 minWidthEnclosingRectangle = wouldBeRect.width();
                 minIndex = currentIndex;
+                minPointL1Norm =
+                    points[currentIndex]->getX() + points[currentIndex]->getY();
+            }
+            else if (wouldBeRect.width() == minWidthEnclosingRectangle &&
+                     points[currentIndex]->getX() +
+                             points[currentIndex]->getY() <
+                         minPointL1Norm)
+            {
+                minWidthEnclosingRectangle = wouldBeRect.width();
+                minIndex = currentIndex;
+                minPointL1Norm =
+                    points[currentIndex]->getX() + points[currentIndex]->getY();
             }
         }
         currentIndex++;

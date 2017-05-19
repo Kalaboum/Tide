@@ -1,5 +1,5 @@
 #include "CutRect.h"
-
+#include "LayoutPolicy.h"
 CutRect CutRect::createCutRect(CutPtr firstWidthCut, CutPtr secondWidthCut,
                                CutPtr firstHeightCut, CutPtr secondHeightCut,
                                ContentWindowPtr window)
@@ -40,4 +40,41 @@ QRectF CutRect::getCorrespondingRect() const
 ContentWindowPtr CutRect::getWindow()
 {
     return _window;
+}
+
+int CutRect::beginOrderHeight()
+{
+    return _firstHeightCut->getOrder();
+}
+
+int CutRect::endOrderHeight()
+{
+    return _secondHeightCut->getOrder();
+}
+
+int CutRect::beginOrderWidth()
+{
+    return _firstWidthCut->getOrder();
+}
+
+int CutRect::endOrderWidth()
+{
+    return _secondWidthCut->getOrder();
+}
+
+void CutRect::changeCuts(CutPtr firstWidthCut, CutPtr secondWidthCut,
+                         CutPtr firstHeightCut, CutPtr secondHeightCut)
+{
+    _firstWidthCut = firstWidthCut;
+    _secondWidthCut = secondWidthCut;
+    _firstHeightCut = firstHeightCut;
+    _secondHeightCut = secondHeightCut;
+}
+
+void CutRect::updateWindowSize()
+{
+    QRectF rectWithoutMargins =
+        LayoutPolicy::rectWithoutMargins(getCorrespondingRect(),
+                                         _window->getContentType());
+    _window->setCoordinates(rectWithoutMargins);
 }

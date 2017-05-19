@@ -25,3 +25,20 @@ qreal Cut::getY() const
 {
     return Y;
 }
+
+void Cut::scale(qreal scaleFactor)
+{
+    if (Y > 0)
+    {
+        Y *= scaleFactor;
+    }
+    else if (X > 0)
+    {
+        X *= scaleFactor;
+    }
+}
+
+void Cut::setOrder(int order)
+{
+    _order = order;
+}

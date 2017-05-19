@@ -8,11 +8,15 @@ public:
     static Cut heightCut(qreal y);
     qreal getX() const;
     qreal getY() const;
+    void scale(qreal scaleFactor);
+    void setOrder(int order);
+    int getOrder();
 
 private:
     Cut(qreal x, qreal y);
-    const qreal X = -1.0;
-    const qreal Y = -1.0;
+    qreal X = -1.0;
+    qreal Y = -1.0;
+    int _order;
 };
 
 typedef boost::shared_ptr<Cut> CutPtr;

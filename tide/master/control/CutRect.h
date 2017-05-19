@@ -17,6 +17,13 @@ public:
     bool intersectWith(const QRectF& rect) const;
     QRectF getCorrespondingRect() const;
     ContentWindowPtr getWindow();
+    int beginOrderWidth() const;
+    int endOrderWidth() const;
+    int beginOrderHeight() const;
+    int endOrderHeight() const;
+    void changeCuts(CutPtr firstWidthCut, CutPtr secondWidthCut,
+                    CutPtr firstHeightCut, CutPtr secondHeightCut);
+    void updateWindowSize();
 
 private:
     CutRect(CutPtr firstWidthCut, CutPtr secondWidthCut, CutPtr firstHeightCut,

@@ -58,3 +58,22 @@ QRectF LayoutPolicy::_addMargins(const ContentWindowPtr window)
     }
     return rectWithMargins;
 }
+
+QRectF LayoutPolicy::rectWithoutMargins(const QRectF& rect,
+                                        CONTENT_TYPE content_type) const
+{
+    // take care that margins are respected
+    QRectF rectWithoutMargins =
+        QRectF(rect.left() + controlSpecifications::WINDOW_CONTROLS_MARGIN_PX,
+               rect.top() + controlSpecifications::WINDOW_TITLE_HEIGHT,
+               rect.width() - controlSpecifications::WINDOW_CONTROLS_MARGIN_PX -
+                   controlSpecifications::WINDOW_SPACING_PX,
+               rect.height() - controlSpecifications::WINDOW_SPACING_PX -
+                   controlSpecifications::WINDOW_TITLE_HEIGHT);
+    if (content_type == CONTENT_TYPE_MOVIE)
+    {
+        rectWithoutMargins.setTop(rectWithoutMargins.top() +
+                                  controlSpecifications::MOVIE_BAR_HEIGHT);
+    }
+    return rectWithoutMargins;
+}
