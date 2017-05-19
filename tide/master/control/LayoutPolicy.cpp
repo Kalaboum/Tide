@@ -41,26 +41,16 @@ ContentWindowPtrs LayoutPolicy::_sortByMaxRatio(
     return windowVec;
 }
 
-QRectF LayoutPolicy::_addMargins(const ContentWindowPtr window)
+QRectF LayoutPolicy::rectWithMargins(const ContentWindowPtr window)
 {
-    QRectF rectWithMargins =
-        QRectF(window->x(), window->y(), window->width(), window->height());
-    rectWithMargins.setTop(rectWithMargins.top() -
-                           controlSpecifications::WINDOW_SPACING_PX -
-                           controlSpecifications::WINDOW_TITLE_HEIGHT);
-    rectWithMargins.setLeft(rectWithMargins.left() -
-                            controlSpecifications::WINDOW_CONTROLS_MARGIN_PX -
-                            controlSpecifications::WINDOW_SPACING_PX);
-    if (window->getContentPtr()->getType() == CONTENT_TYPE_MOVIE)
-    {
-        rectWithMargins.setTop(rectWithMargins.top() -
-                               controlSpecifications::MOVIE_BAR_HEIGHT);
-    }
-    return rectWithMargins;
+    return rectWithMargins(QRectF(window->x(), window->y(), window->width(),
+                                  window->height()),
+                           window->getContentPtr()->getType());
 }
+// TODO add function addMargins with rect and content_type
 
 QRectF LayoutPolicy::rectWithoutMargins(const QRectF& rect,
-                                        CONTENT_TYPE content_type) const
+                                        CONTENT_TYPE content_type)
 {
     // take care that margins are respected
     QRectF rectWithoutMargins =
@@ -76,4 +66,21 @@ QRectF LayoutPolicy::rectWithoutMargins(const QRectF& rect,
                                   controlSpecifications::MOVIE_BAR_HEIGHT);
     }
     return rectWithoutMargins;
+}
+
+QRectF LayoutPolicy::rectWithMargins(const QRectF& rect, CONTENT_TYPE type)
+{
+    QRectF rectWithMargins = QRect(rect.toRect());
+    rectWithMargins.setTop(rectWithMargins.top() -
+                           controlSpecifications::WINDOW_SPACING_PX -
+                           controlSpecifications::WINDOW_TITLE_HEIGHT);
+    rectWithMargins.setLeft(rectWithMargins.left() -
+                            controlSpecifications::WINDOW_CONTROLS_MARGIN_PX -
+                            controlSpecifications::WINDOW_SPACING_PX);
+    if (type == CONTENT_TYPE_MOVIE)
+    {
+        rectWithMargins.setTop(rectWithMargins.top() -
+                               controlSpecifications::MOVIE_BAR_HEIGHT);
+    }
+    return rectWithMargins;
 }

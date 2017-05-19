@@ -14,15 +14,19 @@ public:
                                  CutPtr firstHeightCut, CutPtr secondHeightCut,
                                  ContentWindowPtr window);
 
+    static QRectF getScaledRect(const QRectF& rectToScale,
+                                const QRectF& bounds);
     bool intersectWith(const QRectF& rect) const;
     QRectF getCorrespondingRect() const;
     ContentWindowPtr getWindow();
-    int beginOrderWidth() const;
-    int endOrderWidth() const;
-    int beginOrderHeight() const;
-    int endOrderHeight() const;
-    void changeCuts(CutPtr firstWidthCut, CutPtr secondWidthCut,
-                    CutPtr firstHeightCut, CutPtr secondHeightCut);
+    size_t beginOrderWidth() const;
+    size_t endOrderWidth() const;
+    size_t beginOrderHeight() const;
+    size_t endOrderHeight() const;
+    std::vector<CutPtr> giveNewBounds(CutPtr firstWidthCut,
+                                      CutPtr secondWidthCut,
+                                      CutPtr firstHeightCut,
+                                      CutPtr secondHeightCut);
     void updateWindowSize();
 
 private:

@@ -1,8 +1,8 @@
 #include "CutGrid.h"
 #include "Cut.h"
+#include "CutRect.h"
 #include "LayoutPolicy.h"
 #include "scene/ContentWindow.h"
-#include <iostream.h>
 CutGrid::CutGrid()
 {
     widthCuts.push_back(boost::make_shared<Cut>(Cut::widthCut(0.0)));
@@ -13,14 +13,14 @@ CutGrid::CutGrid()
 bool CutGrid::isPossibleInsertWindowAtPoint(CutPointPtr point,
                                             ContentWindowPtr window) const
 {
-    QRectF rectWithMargins = LayoutPolicy::_addMargins(window);
+    QRectF rectWithMargins = LayoutPolicy::rectWithMargins(window);
     rectWithMargins.moveTopLeft(QPoint(point->getX(), point->getY()));
     return !(_intersectWithPreviousWindows(rectWithMargins));
 }
 
 bool CutGrid::insertWindowAtPoint(CutPointPtr point, ContentWindowPtr window)
 {
-    QRectF rectWithMargins = LayoutPolicy::_addMargins(window);
+    QRectF rectWithMargins = LayoutPolicy::rectWithMargins(window);
     rectWithMargins.moveTopLeft(QPoint(point->getX(), point->getY()));
     if (_intersectWithPreviousWindows(rectWithMargins))
     {
@@ -119,13 +119,21 @@ std::vector<CutPointPtr> CutGrid::getPossibleInsertionPointsForWindow(
 void CutGrid::balance(const QRectF& availableSpace)
 {
     _scaleCuts(availableSpace);
-    for (int windowIndex = 0; windowIndex < windowsAdded.size(); windowIndex++)
+    for (size_t windowIndex = 0; windowIndex < windowsAdded.size();
+         windowIndex++)
     {
-        std::vector<std::vector<int>> matrixOfIds = _toMatrix();
-        std::vector<boost::make_shared<int>> indices =
+        _setOrderOfCuts();
+        std::vector<std::vector<int>> matrixOfIds(
+            widthCuts.size() - 1, std::vector<int>(heightCuts.size() - 1, -1));
+        _fillMatrix(matrixOfIds);
+        std::vector<boost::shared_ptr<size_t>> indices =
             _getIndicesInMatrix(windowsAdded[windowIndex]);
         _findBiggerCoordsForId(windowIndex, matrixOfIds, indices);
-        _changeCutsWithNewIndicesOfMatrix(indices, windowIndex);
+        // TODO fix this, must find the space it occupies and add the cuts
+        for (CutPtr cut : _giveNewBoundsToWindow(indices, windowIndex))
+        {
+            _addCut(cut);
+        }
     }
     _updateWindows();
 }
@@ -138,21 +146,21 @@ void CutGrid::_updateWindows()
     }
 }
 
-void CutGrid::_changeCutsWithNewIndicesOfMatrix(
-    const std::vector<boost::shared_ptr<int>>& indices, int windowIndex)
+std::vector<CutPtr> CutGrid::_giveNewBoundsToWindow(
+    const std::vector<boost::shared_ptr<size_t>>& indices, int windowIndex)
 {
-    windowsAdded[windowIndex]->changeCuts(widthCuts[indices[0]].get(),
-                                          widthCuts[indices[1].get()],
-                                          heightCuts[indices[2].get()],
-                                          heightCuts[indices[3].get()]);
+    return windowsAdded[windowIndex]->giveNewBounds(widthCuts[*indices[0]],
+                                                    widthCuts[*indices[1]],
+                                                    heightCuts[*indices[2]],
+                                                    heightCuts[*indices[3]]);
 }
 
-// format of indices is beginWidthIndex, endWidthIndex(included),
-// beginHeigthIndex, endHeightIndex (included)
+// format of indices is beginWidthIndex, endWidthIndex(not included),
+// beginHeigthIndex, endHeightIndex (not included)
 // TODO check if augment need to modify matrixOfIds, check if id is needed
 void CutGrid::_findBiggerCoordsForId(
     int id, std::vector<std::vector<int>>& matrixOfIds,
-    std::vector<boost::shared_ptr<int>> indices) const
+    std::vector<boost::shared_ptr<size_t>>& indices) const
 {
     _augmentRight(id, matrixOfIds, indices);
     _augmentLeft(id, matrixOfIds, indices);
@@ -160,104 +168,91 @@ void CutGrid::_findBiggerCoordsForId(
     _augmentTop(id, matrixOfIds, indices);
 }
 
-void CutGrid::_augmentRight(int id, std::vector<std::vector<int>>& matrixOfIds,
-                            std::vector<boost::shared_ptr<int>> indices) const
+void CutGrid::_augmentRight(
+    int id, std::vector<std::vector<int>>& matrixOfIds,
+    std::vector<boost::shared_ptr<size_t>>& indices) const
 {
-    for (int j = indices[2].get; j <= indices[3].get; j++)
+    for (size_t j = *indices[2]; j < *indices[3]; j++)
     {
-        if (indices[1].get() + 1 >= matrixOfIds.size() ||
-            matrixOfIds[indices[1].get() + 1] != -1)
+        if (*indices[1] >= matrixOfIds.size() ||
+            !(matrixOfIds[*indices[1]][j] == -1))
         {
             return;
         }
     }
-    indices[1] = boost::make_shared<int>(indices[1].get() + 1);
+    indices[1] = boost::make_shared<size_t>(*indices[1] + 1);
     _augmentRight(id, matrixOfIds, indices);
 }
 
-void CutGrid::_augmentLeft(int id, std::vector<std::vector<int>>& matrixOfIds,
-                           std::vector<boost::shared_ptr<int>> indices) const
+void CutGrid::_augmentLeft(
+    int id, std::vector<std::vector<int>>& matrixOfIds,
+    std::vector<boost::shared_ptr<size_t>>& indices) const
 {
-    for (int j = indices[2].get; j <= indices[3].get; j++)
+    for (size_t j = *indices[2]; j < *indices[3]; j++)
     {
-        if (indices[0].get() - 1 < 0 || matrixOfIds[indices[0].get() - 1] != -1)
+        if (*indices[0] == 0 || matrixOfIds[*indices[0] - 1][j] != -1)
         {
             return;
         }
     }
-    indices[0] = boost::make_shared<int>(indices[0].get() - 1);
+    indices[0] = boost::make_shared<size_t>(*indices[0] - 1);
     _augmentLeft(id, matrixOfIds, indices);
 }
 
 void CutGrid::_augmentTop(int id, std::vector<std::vector<int>>& matrixOfIds,
-                          std::vector<boost::shared_ptr<int>> indices) const
+                          std::vector<boost::shared_ptr<size_t>>& indices) const
 {
-    for (int i = indices[0].get; i <= indices[1].get; j++)
+    for (size_t i = *indices[0]; i < *indices[1]; i++)
     {
-        if (indices[2].get() - 1 < 0 || matrixOfIds[indices[2].get() - 1] != -1)
+        if (*indices[2] == 0 || matrixOfIds[i][*indices[2] - 1] != -1)
         {
             return;
         }
     }
-    indices[2] = boost::make_shared<int>(indices[2].get() - 1);
+    indices[2] = boost::make_shared<size_t>(*indices[2] - 1);
     _augmentTop(id, matrixOfIds, indices);
 }
 
-void CutGrid::_augmentBottom(int id, std::vector<std::vector<int>>& matrixOfIds,
-                             std::vector<boost::shared_ptr<int>> indices) const
+void CutGrid::_augmentBottom(
+    int id, std::vector<std::vector<int>>& matrixOfIds,
+    std::vector<boost::shared_ptr<size_t>>& indices) const
 {
-    for (int i = indices[0].get; i <= indices[1].get; j++)
+    for (size_t i = *indices[0]; i < *indices[1]; i++)
     {
-        if (indices[3].get() + 1 > matrixOfIds[0].size() ||
-            matrixOfIds[indices[3].get() + 1] != -1)
+        if (*indices[3] >= matrixOfIds[0].size() ||
+            matrixOfIds[i][*indices[3]] != -1)
         {
             return;
         }
     }
-    indices[3] = boost::make_shared<int>(indices[3].get() + 1);
+    indices[3] = boost::make_shared<size_t>(*indices[3] + 1);
     _augmentBottom(id, matrixOfIds, indices);
-}
-
-void CutGrid::_augmentRight(int id, std::vector<std::vector<int>>& matrixOfIds,
-                            std::vector<boost::shared_ptr<int>> indices) const
-{
-    for (int j = indices[2].get; j <= indices[3].get; j++)
-    {
-        if (matrixOfIds[indices[1].get() + 1] != -1)
-        {
-            return;
-        }
-    }
-    indices[1] = boost::make_shared<int>(indices[1].get() + 1);
 }
 
 void CutGrid::_scaleCuts(const QRectF& availableSpace)
 {
     qreal scale_width =
-        availableSpace.width() / widthCuts[widthCuts.size() - 1];
+        availableSpace.width() / widthCuts[widthCuts.size() - 1]->getX();
     qreal scale_height =
-        availableSpace.height() / heightCuts[heightCuts.size() - 1];
+        availableSpace.height() / heightCuts[heightCuts.size() - 1]->getY();
     for (CutPtr cut : widthCuts)
     {
-        cut->scale(scale_width);
+        cut->scale(scale_width, availableSpace.left());
     }
     for (CutPtr cut : heightCuts)
     {
-        cut->scale(scale_height);
+        cut->scale(scale_height, availableSpace.top());
     }
 }
 
-std::vector<std::vector<int>> CutGrid::_toMatrix() const
+void CutGrid::_fillMatrix(std::vector<std::vector<int>>& initialVector) const
 {
-    std::vector<std::vector<int>> initialVector(
-        widthCuts.size() - 1, std::vector<int>(heightCuts.size() - 1), -1);
-    _setOrderOfCuts();
-    for (int id = 0; id < windowsAdded.size(); id++)
+    for (int id = 0; id < int(windowsAdded.size()); id++)
     {
-        int widthBegin = windowsAdded[id]->beginOrderWidth();
-        int widthEnd = windowsAdded[id]->endOrderWidth();
-        int heightBegin = windowsAdded[id]->beginOrderWidth();
-        int heightEnd = windowsAdded[id]->endOrderWidth();
+        size_t widthBegin = windowsAdded[id]->beginOrderWidth();
+        size_t widthEnd = windowsAdded[id]->endOrderWidth();
+        size_t heightBegin = windowsAdded[id]->beginOrderHeight();
+        size_t heightEnd = windowsAdded[id]->endOrderHeight();
         for (size_t width_index = widthBegin; width_index < widthEnd;
              width_index++)
         {
@@ -268,26 +263,26 @@ std::vector<std::vector<int>> CutGrid::_toMatrix() const
             }
         }
     }
-    return initialVector;
 }
 
-void CutGrid::_setOrderOfCuts()
+void CutGrid::_setOrderOfCuts() const
 {
-    for (int order = 0; order < widthCuts.size(); order++)
+    for (size_t order = 0; order < widthCuts.size(); order++)
     {
         widthCuts[order]->setOrder(order);
     }
-    for (int order = 0; order < heightCuts.size(); order++)
+    for (size_t order = 0; order < heightCuts.size(); order++)
     {
         heightCuts[order]->setOrder(order);
     }
 }
 
-std::vector<boost::shared_ptr<int>> CutGrid::_getIndicesInMatrix(
+std::vector<boost::shared_ptr<size_t>> CutGrid::_getIndicesInMatrix(
     const CutRectPtr cutRect) const
 {
-    return std::vector<boost::shared_ptr<int>>{
-        boost::make_shared<int>(cutRect->beginOrderWidth()),
-        boost::make_shared(cutRect->endOrderWidth() - 1),
-        boost::make_shared(cutRect->beginOrderHeight()),
-        boost::make_shared(cutRect->endOrderWidth() - 1)};
+    return std::vector<boost::shared_ptr<size_t>>{
+        boost::make_shared<size_t>(cutRect->beginOrderWidth()),
+        boost::make_shared<size_t>(cutRect->endOrderWidth()),
+        boost::make_shared<size_t>(cutRect->beginOrderHeight()),
+        boost::make_shared<size_t>(cutRect->endOrderHeight())};
+}

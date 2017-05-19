@@ -26,19 +26,26 @@ qreal Cut::getY() const
     return Y;
 }
 
-void Cut::scale(qreal scaleFactor)
+void Cut::scale(qreal scaleFactor, qreal offset)
 {
-    if (Y > 0)
+    if (Y >= 0)
     {
         Y *= scaleFactor;
+        Y += offset;
     }
-    else if (X > 0)
+    else if (X >= 0)
     {
         X *= scaleFactor;
+        Y += offset;
     }
 }
 
-void Cut::setOrder(int order)
+void Cut::setOrder(size_t order)
 {
     _order = order;
+}
+
+size_t Cut::getOrder()
+{
+    return _order;
 }

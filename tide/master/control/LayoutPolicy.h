@@ -1,5 +1,6 @@
 #ifndef LAYOUTPOLICY_H
 #define LAYOUTPOLICY_H
+#include "scene/ContentType.h"
 #include "types.h"
 
 // Hardcoded variables which are also defined in style.js
@@ -30,7 +31,10 @@ public:
     /** Update the focused coordinates for the set of windows. */
     virtual void updateFocusedCoord(const ContentWindowSet& windows) const = 0;
     virtual ~LayoutPolicy(){};
-    static QRectF _addMargins(const ContentWindowPtr window);
+    static QRectF rectWithMargins(const ContentWindowPtr window);
+    static QRectF rectWithMargins(const QRectF& rect, CONTENT_TYPE type);
+    static QRectF rectWithoutMargins(const QRectF& rect,
+                                     CONTENT_TYPE content_type);
 
 protected:
     const DisplayGroup& _group;

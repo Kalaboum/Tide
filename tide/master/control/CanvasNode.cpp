@@ -73,29 +73,11 @@ void CanvasNode::updateFocusCoordinates()
     _constrainIntoRect(AVAILABLE_SPACE);
 }
 
-QRectF CanvasNode::_rectWithoutMargins(const QRectF& rect,
-                                       CONTENT_TYPE content_type) const
-{
-    // take care that margins are respected
-    QRectF rectWithoutMargins =
-        QRectF(rect.left() + controlSpecifications::WINDOW_CONTROLS_MARGIN_PX,
-               rect.top() + controlSpecifications::WINDOW_TITLE_HEIGHT,
-               rect.width() - controlSpecifications::WINDOW_CONTROLS_MARGIN_PX -
-                   controlSpecifications::WINDOW_SPACING_PX,
-               rect.height() - controlSpecifications::WINDOW_SPACING_PX -
-                   controlSpecifications::WINDOW_TITLE_HEIGHT);
-    if (content_type == CONTENT_TYPE_MOVIE)
-    {
-        rectWithoutMargins.setTop(rectWithoutMargins.top() +
-                                  controlSpecifications::MOVIE_BAR_HEIGHT);
-    }
-    return rectWithoutMargins;
-}
-
 void CanvasNode::_constrainTerminalIntoRect(const QRectF& rect)
 {
     QRectF rectWithoutMargins =
-        _rectWithoutMargins(rect, content->getContentPtr()->getType());
+        LayoutPolicy::rectWithoutMargins(rect,
+                                         content->getContentPtr()->getType());
     qreal scaleFactor =
         std::min(rectWithoutMargins.width() / content->width(),
                  rectWithoutMargins.height() / content->height());
@@ -107,7 +89,7 @@ void CanvasNode::_constrainTerminalIntoRect(const QRectF& rect)
                    (rectWithoutMargins.height() - newHeight) / 2;
     QRectF newRect = QRectF(newLeft, newTop, newWidth, newHeight);
     content->setFocusedCoordinates(newRect);
-    QRectF rectWithMargins = LayoutPolicy::_addMargins(content);
+    QRectF rectWithMargins = LayoutPolicy::rectWithMargins(content);
     setRect(rectWithMargins.left(), rectWithMargins.top(),
             rectWithMargins.width(), rectWithMargins.height());
 }
@@ -192,8 +174,8 @@ bool CanvasNode::_insertRoot(ContentWindowPtr window)
     {
         firstChild = boost::make_shared<CanvasNode>(
             CanvasNode(rootPtr, rootPtr, window,
-                       LayoutPolicy::_addMargins(window)));
-        _setRect(LayoutPolicy::_addMargins(window));
+                       LayoutPolicy::rectWithMargins(window)));
+        _setRect(LayoutPolicy::rectWithMargins(window));
         return true;
     }
     return false;
@@ -234,7 +216,7 @@ bool CanvasNode::_insertTerminal(ContentWindowPtr window)
     {
         return false;
     }
-    QRectF realSize = LayoutPolicy::_addMargins(window);
+    QRectF realSize = LayoutPolicy::rectWithMargins(window);
     if (realSize.width() <= width() && realSize.height() <= height())
     {
         // separate depending on ratio (vertical or horizontal cut
@@ -289,7 +271,7 @@ bool CanvasNode::_insertTerminal(ContentWindowPtr window)
 // This method is called only by the rootNode : it creates some space
 bool CanvasNode::_insertSecondChild(ContentWindowPtr window)
 {
-    QRectF realSize = LayoutPolicy::_addMargins(window);
+    QRectF realSize = LayoutPolicy::rectWithMargins(window);
     if (_chooseVerticalCut(realSize))
     {
         if (realSize.height() > height())

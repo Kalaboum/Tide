@@ -46,7 +46,7 @@ void CutAlgo::updateFocusedCoord(const ContentWindowSet &windows) const
                                         windowVec[0]);
             windowVec.erase(windowVec.begin());
         }
-        grid.balance();
+        grid.balance(_getAvailableSpace());
     }
 }
 
@@ -100,9 +100,9 @@ bool CutAlgo::_isInRectangle(CutPointPtr point,
                              const QRectF &enclosingRectangle,
                              ContentWindowPtr window) const
 {
-    return (point->getX() + LayoutPolicy::_addMargins(window).width() <
+    return (point->getX() + LayoutPolicy::rectWithMargins(window).width() <
                 enclosingRectangle.width() &&
-            (point->getY() + LayoutPolicy::_addMargins(window).height() <
+            (point->getY() + LayoutPolicy::rectWithMargins(window).height() <
              enclosingRectangle.height()));
 }
 
@@ -111,8 +111,8 @@ QRectF CutAlgo::_computeRectIfInsertion(CutPointPtr point,
                                         ContentWindowPtr window) const
 {
     QRectF rectByAddingWindow =
-        QRectF(0.0, 0.0, point->getX() + _addMargins(window).width(),
-               point->getY() + _addMargins(window).height());
+        QRectF(0.0, 0.0, point->getX() + rectWithMargins(window).width(),
+               point->getY() + rectWithMargins(window).height());
     QRectF newEnclosingRectangle =
         _getEnclosingRectangleOfRatio(rectByAddingWindow, enclosingRectangle);
     // check if the new enclosing rectangle is bigger or smaller than the
@@ -133,7 +133,7 @@ QRectF CutAlgo::_defineFirstEnclosingRectangle(ContentWindowPtr window) const
 {
     QRectF available_space = _getAvailableSpace();
     QRectF rect =
-        _getEnclosingRectangleOfRatio(_addMargins(window), available_space);
+        _getEnclosingRectangleOfRatio(rectWithMargins(window), available_space);
     rect.moveLeft(0.0);
     rect.moveTop(0.0);
     return rect;

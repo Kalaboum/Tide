@@ -30,8 +30,6 @@ public:
 private:
     void _constrainTerminalIntoRect(const QRectF& rect);
     void _constrainNodeIntoRect(const QRectF& rect);
-    QRectF _rectWithoutMargins(const QRectF& rect,
-                               CONTENT_TYPE content_type) const;
     bool _insertRoot(ContentWindowPtr window);
     bool _insertTerminal(ContentWindowPtr window);
     void _computeBoundaries(const QRectF& realSize,
