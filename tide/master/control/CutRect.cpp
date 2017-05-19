@@ -70,7 +70,8 @@ std::vector<CutPtr> CutRect::giveNewBounds(CutPtr firstWidthCut,
 {
     QRectF rectRatio = _window->getCoordinates();
     QRectF newBounds = QRectF(firstWidthCut->getX(), firstHeightCut->getY(),
-                              secondWidthCut->getX(), secondHeightCut->getY());
+                              secondWidthCut->getX() - firstWidthCut->getX(),
+                              secondHeightCut->getY() - firstHeightCut->getY());
     QRectF newBoundsWithoutMargins =
         LayoutPolicy::rectWithoutMargins(newBounds,
                                          _window->getContentPtr()->getType());
@@ -100,6 +101,7 @@ void CutRect::updateWindowSize()
     QRectF rectWithoutMargins =
         LayoutPolicy::rectWithoutMargins(getCorrespondingRect(),
                                          _window->getContentPtr()->getType());
+
     _window->setFocusedCoordinates(rectWithoutMargins);
 }
 

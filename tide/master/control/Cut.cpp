@@ -36,7 +36,7 @@ void Cut::scale(qreal scaleFactor, qreal offset)
     else if (X >= 0)
     {
         X *= scaleFactor;
-        Y += offset;
+        X += offset;
     }
 }
 

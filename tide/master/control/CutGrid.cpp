@@ -119,21 +119,22 @@ std::vector<CutPointPtr> CutGrid::getPossibleInsertionPointsForWindow(
 void CutGrid::balance(const QRectF& availableSpace)
 {
     _scaleCuts(availableSpace);
+    _setOrderOfCuts();
+    std::vector<std::vector<int>> matrixOfIds(
+        widthCuts.size() - 1, std::vector<int>(heightCuts.size() - 1, -1));
+    _fillMatrix(matrixOfIds);
     for (size_t windowIndex = 0; windowIndex < windowsAdded.size();
          windowIndex++)
     {
-        _setOrderOfCuts();
-        std::vector<std::vector<int>> matrixOfIds(
-            widthCuts.size() - 1, std::vector<int>(heightCuts.size() - 1, -1));
-        _fillMatrix(matrixOfIds);
         std::vector<boost::shared_ptr<size_t>> indices =
             _getIndicesInMatrix(windowsAdded[windowIndex]);
-        _findBiggerCoordsForId(windowIndex, matrixOfIds, indices);
+        _giveNewBoundsToWindow(indices, windowIndex);
+        //_findBiggerCoordsForId(windowIndex, matrixOfIds, indices);
         // TODO fix this, must find the space it occupies and add the cuts
-        for (CutPtr cut : _giveNewBoundsToWindow(indices, windowIndex))
+        /*for (CutPtr cut : _giveNewBoundsToWindow(indices, windowIndex))
         {
             _addCut(cut);
-        }
+        }*/
     }
     _updateWindows();
 }
