@@ -10,6 +10,7 @@ public:
     void insert(ContentWindowPtr window);
     QRectF getPosition(int position);
     void updateFocusCoordinates();
+    qreal getOccupiedSpace();
 
 private:
     using NodePtr = boost::shared_ptr<CanvasNode>;

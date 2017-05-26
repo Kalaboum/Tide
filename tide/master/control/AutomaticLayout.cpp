@@ -23,53 +23,6 @@ qreal AutomaticLayout::_computeMaxRatio(ContentWindowPtr window) const
                     window->height() / _getAvailableSpace().height());
 }
 
-/**
- * Insert the window in the collection windowVec
- *
- * @brief AutomaticLayout::_dichotomicInsert
- * @param window
- * @param windowVec
- */
-// TODO delete this once it worked
-void AutomaticLayout::_dichotomicInsert(ContentWindowPtr window,
-                                        ContentWindowPtrs& windowVec) const
-{
-    if (windowVec.size() == 0)
-    {
-        windowVec.push_back(window);
-    }
-    else
-    {
-        size_t a = 0;
-        size_t b = windowVec.size();
-        while (b - a > 1)
-        {
-            if (_computeMaxRatio(windowVec[(a + b) / 2]) >
-                _computeMaxRatio(window))
-            {
-                b = (a + b) / 2;
-            }
-            else
-            {
-                a = (a + b) / 2;
-            }
-        }
-        if (_computeMaxRatio(windowVec[a]) < _computeMaxRatio(window))
-        {
-            windowVec.insert(windowVec.begin() + a, window);
-        }
-        else if (b < windowVec.size() &&
-                 _computeMaxRatio(windowVec[b]) > _computeMaxRatio(window))
-        {
-            windowVec.insert(windowVec.begin() + b + 1, window);
-        }
-        else
-        {
-            windowVec.insert(windowVec.begin() + b, window);
-        }
-    }
-}
-
 QRectF AutomaticLayout::getFocusedCoord(const ContentWindow& window) const
 {
     return _getFocusedCoord(window, _group.getFocusedWindows());
@@ -115,8 +68,21 @@ void AutomaticLayout::updateFocusedCoord(const ContentWindowSet& windows) const
     }
     else
     {
-        CanvasTree layoutTree =
-            CanvasTree(_sortByMaxRatio(windows), _getAvailableSpace());
+        ContentWindowPtrs sortedWindows = _sortByMaxRatio(windows);
+        CanvasTree layoutTree = CanvasTree(sortedWindows, _getAvailableSpace());
+        qreal maxOccupiedSpace = layoutTree.getOccupiedSpace();
+        for (int i = 0; i < MAX_RANDOM_PERMUTATIONS; i++)
+        {
+            std::random_shuffle(sortedWindows.begin(), sortedWindows.end());
+            CanvasTree currentTree =
+                CanvasTree(sortedWindows, _getAvailableSpace());
+            if (currentTree.getOccupiedSpace() > maxOccupiedSpace)
+            {
+                std::cout << "permutations did well" << std::endl;
+                layoutTree = currentTree;
+                maxOccupiedSpace = currentTree.getOccupiedSpace();
+            }
+        }
         layoutTree.updateFocusCoordinates();
     }
 }

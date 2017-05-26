@@ -89,18 +89,23 @@ qreal CanvasNode::getOccupiedSpace()
     {
         preview();
     }
+    return _getOccupiedSpace();
+}
+
+qreal CanvasNode::_getOccupiedSpace() const
+{
     if (isRoot())
     {
         if (firstChild)
         {
             if (secondChild)
             {
-                return firstChild->getOccupiedSpace() +
-                       secondChild->getOccupiedSpace();
+                return firstChild->_getOccupiedSpace() +
+                       secondChild->_getOccupiedSpace();
             }
             else
             {
-                return firstChild->getOccupiedSpace();
+                return firstChild->_getOccupiedSpace();
             }
         }
         return 0;
@@ -115,7 +120,8 @@ qreal CanvasNode::getOccupiedSpace()
     }
     else
     {
-        return firstChild->getOccupiedSpace() + secondChild->getOccupiedSpace();
+        return firstChild->_getOccupiedSpace() +
+               secondChild->_getOccupiedSpace();
     }
 }
 
@@ -179,12 +185,6 @@ void CanvasNode::_constrainTerminalIntoRect(const QRectF& rect)
 
     rectWithoutMargins.setWidth(newWidth);
     rectWithoutMargins.setHeight(newHeight);
-    /*qreal newLeft =
-        rectWithoutMargins.left() + (rectWithoutMargins.width() - newWidth) / 2;
-    qreal newTop = rectWithoutMargins.top() +
-                   (rectWithoutMargins.height() - newHeight) / 2;
-    QRectF newRect = QRectF(newLeft, newTop, newWidth, newHeight);*/
-    // TODO Check this ,diff commit
     QRectF rectWithMargins = _addMargins(rectWithoutMargins);
     rectWithMargins.moveCenter(rect.center());
     setRect(rectWithMargins.left(), rectWithMargins.top(),
@@ -193,18 +193,11 @@ void CanvasNode::_constrainTerminalIntoRect(const QRectF& rect)
 
 void CanvasNode::_constrainNodeIntoRect(const QRectF& rect)
 {
-    /*qreal scaleFactor =
-        std::min(rect.width() / width(), rect.height() / height());
-    qreal newWidth = width() * scaleFactor;
-    qreal newHeight = height() * scaleFactor;
-    qreal newLeft = rect.left() + (rect.width() - newWidth) / 2;
-    qreal newTop = rect.top() + (rect.height() - newHeight) / 2;*/
     qreal firstChildNewWidth = rect.width() * firstChild->width() / width();
     qreal firstChildNewHeight = rect.height() * firstChild->height() / height();
     firstChild->_constrainIntoRect(QRectF(rect.left(), rect.top(),
                                           firstChildNewWidth,
                                           firstChildNewHeight));
-    // TODO see if this causes issues
     if (secondChild->top() == top())
     {
         secondChild->_constrainIntoRect(

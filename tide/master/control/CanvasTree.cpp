@@ -20,3 +20,13 @@ void CanvasTree::updateFocusCoordinates()
         rootNode->updateFocusCoordinates();
     }
 }
+
+qreal CanvasTree::getOccupiedSpace()
+{
+    if (rootNode)
+    {
+        return rootNode->getOccupiedSpace();
+    }
+    else
+        return 0;
+}

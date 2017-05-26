@@ -31,6 +31,7 @@ public:
 
 private:
     void _update();
+    qreal _getOccupiedSpace() const;
     bool previewed = false;
     void _constrainTerminalIntoRect(const QRectF& rect);
     void _constrainNodeIntoRect(const QRectF& rect);
