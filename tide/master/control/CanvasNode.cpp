@@ -70,7 +70,80 @@ bool CanvasNode::isTerminal() const
 }
 void CanvasNode::updateFocusCoordinates()
 {
+    if (!previewed)
+    {
+        preview();
+    }
+    _update();
+}
+
+void CanvasNode::preview()
+{
     _constrainIntoRect(AVAILABLE_SPACE);
+    previewed = true;
+}
+
+qreal CanvasNode::getOccupiedSpace()
+{
+    if (!previewed)
+    {
+        preview();
+    }
+    if (isRoot())
+    {
+        if (firstChild)
+        {
+            if (secondChild)
+            {
+                return firstChild->getOccupiedSpace() +
+                       secondChild->getOccupiedSpace();
+            }
+            else
+            {
+                return firstChild->getOccupiedSpace();
+            }
+        }
+        return 0;
+    }
+    else if (isTerminal())
+    {
+        if (content)
+        {
+            return width() * height();
+        }
+        return 0;
+    }
+    else
+    {
+        return firstChild->getOccupiedSpace() + secondChild->getOccupiedSpace();
+    }
+}
+
+void CanvasNode::_update()
+{
+    if (!isRoot() && isTerminal())
+    {
+        if (content)
+        {
+            content->setFocusedCoordinates(_rectWithoutMargins(toRect()));
+        }
+    }
+    else
+    {
+        if (firstChild)
+        {
+            firstChild->_update();
+        }
+        if (secondChild)
+        {
+            secondChild->_update();
+        }
+    }
+}
+
+QRectF CanvasNode::_rectWithoutMargins(const QRectF& rect) const
+{
+    return _rectWithoutMargins(rect, content->getContent()->getType());
 }
 
 QRectF CanvasNode::_rectWithoutMargins(const QRectF& rect,
@@ -79,7 +152,8 @@ QRectF CanvasNode::_rectWithoutMargins(const QRectF& rect,
     // take care that margins are respected
     QRectF rectWithoutMargins =
         QRectF(rect.left() + controlSpecifications::WINDOW_CONTROLS_MARGIN_PX,
-               rect.top() + controlSpecifications::WINDOW_TITLE_HEIGHT,
+               rect.top() + controlSpecifications::WINDOW_TITLE_HEIGHT +
+                   controlSpecifications::WINDOW_SPACING_PX,
                rect.width() - controlSpecifications::WINDOW_CONTROLS_MARGIN_PX -
                    controlSpecifications::WINDOW_SPACING_PX,
                rect.height() - controlSpecifications::WINDOW_SPACING_PX -
@@ -101,13 +175,16 @@ void CanvasNode::_constrainTerminalIntoRect(const QRectF& rect)
                  rectWithoutMargins.height() / content->height());
     qreal newWidth = content->width() * scaleFactor;
     qreal newHeight = content->height() * scaleFactor;
-    qreal newLeft =
+    rectWithoutMargins.setWidth(newWidth);
+    rectWithoutMargins.setHeight(newHeight);
+    /*qreal newLeft =
         rectWithoutMargins.left() + (rectWithoutMargins.width() - newWidth) / 2;
     qreal newTop = rectWithoutMargins.top() +
                    (rectWithoutMargins.height() - newHeight) / 2;
-    QRectF newRect = QRectF(newLeft, newTop, newWidth, newHeight);
-    content->setFocusedCoordinates(newRect);
-    QRectF rectWithMargins = _addMargins(content);
+    QRectF newRect = QRectF(newLeft, newTop, newWidth, newHeight);*/
+    // TODO Check this ,diff commit
+    QRectF rectWithMargins = _addMargins(rectWithoutMargins);
+    rectWithMargins.moveCenter(rect.center());
     setRect(rectWithMargins.left(), rectWithMargins.top(),
             rectWithMargins.width(), rectWithMargins.height());
 }
@@ -359,17 +436,28 @@ void CanvasNode::_setRect(QRectF newRect)
     setRect(newRect.left(), newRect.top(), newRect.width(), newRect.height());
 }
 
-QRectF CanvasNode::_addMargins(const ContentWindowPtr window)
+QRectF CanvasNode::_addMargins(const ContentWindowPtr window) const
 {
-    QRectF rectWithMargins =
-        QRectF(window->x(), window->y(), window->width(), window->height());
+    return _addMargins(QRectF(window->x(), window->y(), window->width(),
+                              window->height()),
+                       window->getContent()->getType());
+}
+
+QRectF CanvasNode::_addMargins(const QRectF& rect) const
+{
+    return _addMargins(rect, content->getContentPtr()->getType());
+}
+
+QRectF CanvasNode::_addMargins(const QRectF& rect, CONTENT_TYPE type) const
+{
+    QRectF rectWithMargins = rect.toRect();
     rectWithMargins.setTop(rectWithMargins.top() -
                            controlSpecifications::WINDOW_SPACING_PX -
                            controlSpecifications::WINDOW_TITLE_HEIGHT);
     rectWithMargins.setLeft(rectWithMargins.left() -
                             controlSpecifications::WINDOW_CONTROLS_MARGIN_PX -
                             controlSpecifications::WINDOW_SPACING_PX);
-    if (window->getContentPtr()->getType() == CONTENT_TYPE_MOVIE)
+    if (type == CONTENT_TYPE_MOVIE)
     {
         rectWithMargins.setTop(rectWithMargins.top() -
                                controlSpecifications::MOVIE_BAR_HEIGHT);

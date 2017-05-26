@@ -21,6 +21,8 @@ public:
     bool isRoot() const;
     bool isTerminal() const;
     void updateFocusCoordinates();
+    void preview();
+    qreal getOccupiedSpace();
     const QRectF AVAILABLE_SPACE = QRectF(0.0, 0.0, 0.0, 0.0);
     NodePtr rootPtr;
     NodePtr parent;
@@ -28,8 +30,12 @@ public:
     NodePtr secondChild;
 
 private:
+    void _update();
+    bool previewed = false;
     void _constrainTerminalIntoRect(const QRectF& rect);
     void _constrainNodeIntoRect(const QRectF& rect);
+
+    QRectF _rectWithoutMargins(const QRectF& rect) const;
     QRectF _rectWithoutMargins(const QRectF& rect,
                                CONTENT_TYPE content_type) const;
     bool _insertRoot(ContentWindowPtr window);
@@ -43,7 +49,9 @@ private:
     void _setRect(QRectF newRect);
     void _constrainIntoRect(const QRectF& rect);
     ContentWindowPtr content = NULL;
-    QRectF _addMargins(ContentWindowPtr window);
+    QRectF _addMargins(ContentWindowPtr window) const;
+    QRectF _addMargins(const QRectF& rect) const;
+    QRectF _addMargins(const QRectF& rect, CONTENT_TYPE type) const;
     const qreal RESIZE_FACTOR_MAX_FOR_INSERT = 1.3;
 };
 
