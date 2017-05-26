@@ -151,9 +151,10 @@ QRectF CanvasNode::_rectWithoutMargins(const QRectF& rect,
 {
     // take care that margins are respected
     QRectF rectWithoutMargins =
-        QRectF(rect.left() + controlSpecifications::WINDOW_CONTROLS_MARGIN_PX,
+        QRectF(rect.left() + controlSpecifications::WINDOW_CONTROLS_MARGIN_PX +
+                   controlSpecifications::WINDOW_SPACING_PX / 2,
                rect.top() + controlSpecifications::WINDOW_TITLE_HEIGHT +
-                   controlSpecifications::WINDOW_SPACING_PX,
+                   controlSpecifications::WINDOW_SPACING_PX / 2,
                rect.width() - controlSpecifications::WINDOW_CONTROLS_MARGIN_PX -
                    controlSpecifications::WINDOW_SPACING_PX,
                rect.height() - controlSpecifications::WINDOW_SPACING_PX -
@@ -175,6 +176,7 @@ void CanvasNode::_constrainTerminalIntoRect(const QRectF& rect)
                  rectWithoutMargins.height() / content->height());
     qreal newWidth = content->width() * scaleFactor;
     qreal newHeight = content->height() * scaleFactor;
+
     rectWithoutMargins.setWidth(newWidth);
     rectWithoutMargins.setHeight(newHeight);
     /*qreal newLeft =
@@ -452,11 +454,15 @@ QRectF CanvasNode::_addMargins(const QRectF& rect, CONTENT_TYPE type) const
 {
     QRectF rectWithMargins = rect.toRect();
     rectWithMargins.setTop(rectWithMargins.top() -
-                           controlSpecifications::WINDOW_SPACING_PX -
+                           controlSpecifications::WINDOW_SPACING_PX / 2 -
                            controlSpecifications::WINDOW_TITLE_HEIGHT);
+    rectWithMargins.setBottom(rectWithMargins.bottom() +
+                              controlSpecifications::WINDOW_SPACING_PX / 2);
     rectWithMargins.setLeft(rectWithMargins.left() -
                             controlSpecifications::WINDOW_CONTROLS_MARGIN_PX -
-                            controlSpecifications::WINDOW_SPACING_PX);
+                            controlSpecifications::WINDOW_SPACING_PX / 2);
+    rectWithMargins.setRight(rectWithMargins.right() +
+                             controlSpecifications::WINDOW_SPACING_PX / 2);
     if (type == CONTENT_TYPE_MOVIE)
     {
         rectWithMargins.setTop(rectWithMargins.top() -
