@@ -193,30 +193,31 @@ void CanvasNode::_constrainTerminalIntoRect(const QRectF& rect)
 
 void CanvasNode::_constrainNodeIntoRect(const QRectF& rect)
 {
-    qreal scaleFactor =
+    /*qreal scaleFactor =
         std::min(rect.width() / width(), rect.height() / height());
     qreal newWidth = width() * scaleFactor;
     qreal newHeight = height() * scaleFactor;
     qreal newLeft = rect.left() + (rect.width() - newWidth) / 2;
-    qreal newTop = rect.top() + (rect.height() - newHeight) / 2;
-    qreal firstChildNewWidth = newWidth * firstChild->width() / width();
-    qreal firstChildNewHeight = newHeight * firstChild->height() / height();
-    firstChild->_constrainIntoRect(
-        QRectF(newLeft, newTop, firstChildNewWidth, firstChildNewHeight));
+    qreal newTop = rect.top() + (rect.height() - newHeight) / 2;*/
+    qreal firstChildNewWidth = rect.width() * firstChild->width() / width();
+    qreal firstChildNewHeight = rect.height() * firstChild->height() / height();
+    firstChild->_constrainIntoRect(QRectF(rect.left(), rect.top(),
+                                          firstChildNewWidth,
+                                          firstChildNewHeight));
     // TODO see if this causes issues
     if (secondChild->top() == top())
     {
         secondChild->_constrainIntoRect(
-            QRectF(newLeft + firstChildNewWidth, newTop,
-                   newWidth - firstChildNewWidth, firstChildNewHeight));
+            QRectF(rect.left() + firstChildNewWidth, rect.top(),
+                   rect.width() - firstChildNewWidth, firstChildNewHeight));
     }
     else
     {
         secondChild->_constrainIntoRect(
-            QRectF(newLeft, newTop + firstChildNewHeight, firstChildNewWidth,
-                   newHeight - firstChildNewHeight));
+            QRectF(rect.left(), rect.top() + firstChildNewHeight,
+                   firstChildNewWidth, rect.height() - firstChildNewHeight));
     }
-    setRect(newLeft, newTop, newWidth, newHeight);
+    setRect(rect.left(), rect.top(), rect.width(), rect.height());
 }
 
 void CanvasNode::_constrainIntoRect(const QRectF& rect)
