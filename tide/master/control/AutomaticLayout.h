@@ -26,7 +26,7 @@ private:
                             const ContentWindowSet& windows) const;
     ContentWindowPtrs _sortByMaxRatio(const ContentWindowSet& windows) const;
     bool _separateMovies = false;
-    int MAX_RANDOM_PERMUTATIONS = 20;
+    int MAX_RANDOM_PERMUTATIONS = 200;
 };
 
 #endif // AUTOMATICLAYOUT_H
